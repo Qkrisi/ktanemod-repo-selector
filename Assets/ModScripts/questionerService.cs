@@ -39,9 +39,8 @@ public class questionerService : MonoBehaviour
         if (modSelectorObject == null)
         {
             Debug.Log("ModSelector is not loaded");
-            yield break;
         }
-        modSelectorAPI = modSelectorObject.GetComponent<IDictionary<string, object>>();
+        else { modSelectorAPI = modSelectorObject.GetComponent<IDictionary<string, object>>(); }
         Fetch = new WWW("https://ktane.timwi.de/json/raw");
         yield return Fetch;
         if (Fetch.error == null)
@@ -57,7 +56,10 @@ public class questionerService : MonoBehaviour
             yield break;
         }
         List<string> allMods = new List<string>();
-        do { allMods = getSelectorModules(); yield return null; } while (allMods.Count == 0);
+        if (modSelectorAPI != null)
+        {
+            do { allMods = getSelectorModules(); yield return null; } while (allMods.Count == 0);
+        }
         //Debug.LogFormat("allMods length: {0}", allMods.Count);
         List<string> toAdd = new List<string>();
         foreach(string mID in allMods)
@@ -100,7 +102,7 @@ public class questionerService : MonoBehaviour
         List<Module> Modules = new List<Module>();
         foreach(var item in Deserialized.KtaneModules)
         {
-            if ((string)item["Type"] != "Widget") Modules.Add(new Module(item));
+            if ((string)item["Type"] != "Widget" && (string)item[") Modules.Add(new Module(item));
         }
         return Modules;
     }

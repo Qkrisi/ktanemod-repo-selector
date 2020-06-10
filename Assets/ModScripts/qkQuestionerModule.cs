@@ -17,19 +17,35 @@ public class qkQuestionerModule : MonoBehaviour
         {4} Random module from mod selector
         {5} Disabled num
         {6} Enabled num
+        {7} Order num (1st, 2nd, 3rd, etc.) from bomb       
     */
+    private string[] finalQuestions = new string[] { };
 
     private readonly string[] webQuestions = new[] 
     {
-        "Is the {0} module on the repo sorted {2} loaded in the game?",
-        "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?",
         "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?",
-        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?",
-        "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?",
+    };
+
+    private readonly string[] selectorQuestions = new[]
+    {
         "What is the {3} letter of the module that is loaded {1} in game?",
         "Is {4} disabled by an enabled profile?",
         "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)",
         "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)"
+    };
+
+    private readonly string[] bothQuestions = new[]
+    {
+        "Is the {0} module on the repo sorted {2} loaded in the game?",
+        "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?",
+        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?",
+        "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?",
+    };
+
+    private readonly string[] neitherQuestions = new[]
+    {
+        "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?",
+        "What is the {3} letter of the module that is {7} on the bomb sorted Z-A?"
     };
 
     private readonly string[] orderTypes = new[]
@@ -44,13 +60,17 @@ public class qkQuestionerModule : MonoBehaviour
         "Publish date (oldest to newest)"
     };
 
-    private readonly int[] dependsOnDisableds = new int[] { 3, 7 };
+    private readonly string[] dependsOnDisableds = new string[]
+    {
+        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)",
+        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?"
+    };
 
     private questionerService Service;
     private IDictionary<string, object> API { get { try { return Service.modSelectorAPI; } catch { toggleObject("Error"); return null; } } }
     [HideInInspector]
     public bool _solved = false;
-    private List<Module> fetchedMoudles { get { try { return Service.modulesFromWeb; } catch { toggleObject("Error"); return new List<Module>(); } } }
+    private List<Module> fetchedModules { get { try { return Service.modulesFromWeb; } catch { toggleObject("Error"); return new List<Module>(); } } }
     private List<string> MSModules { get { return getSelectorModules(); } }
     private List<string> MSDisabledModules { get { return getDisabledModules(); } }
     private List<string> MSEnabledModules { get { return getEnabledModules(); } }
@@ -89,18 +109,28 @@ public class qkQuestionerModule : MonoBehaviour
         {
             kPair.Value.SetActive(false);
         }
-        if (Service==null || API==null)
+        if(Service==null)
         {
             grantSolve = true;
-            togglableObjects["Error"].SetActive(true);
+            toggleObject("Error", true);
             yield break;
         }
         yield return new WaitUntil(() => Service._done);
-        if(!Service.webQuestions)
+        if(!Service.webQuestions && API==null)
         {
-            grantSolve = true;
-            togglableObjects["Error"].SetActive(true);
-            yield break;
+            finalQuestions = neitherQuestions.ToArray();
+        }
+        else if(!Service.webQuestions && API!=null)
+        {
+            finalQuestions = selectorQuestions.ToArray().Concat(neitherQuestions).ToArray();
+        }
+        else if(Service.webQuestions && API==null)
+        {
+            finalQuestions = webQuestions.ToArray().Concat(neitherQuestions).ToArray();
+        }
+        else
+        {
+            finalQuestions = webQuestions.ToArray().Concat(selectorQuestions).Concat(neitherQuestions).Concat(bothQuestions).ToArray();
         }
         sortModules();
         newStage();
@@ -109,47 +139,55 @@ public class qkQuestionerModule : MonoBehaviour
     private Tuple<string, string> getSolvePair(string[] set) //First: question, Second: answer
     {
         int index = -1;
-        do { index = RNG.Range(0, set.Length); } while (dependsOnDisableds.Contains(index) && MSDisabledModules.Count == 0);
-        int repoIndex = RNG.Range(1, fetchedMoudles.Count + 1);
+        do { index = RNG.Range(0, set.Length); } while (dependsOnDisableds.Contains(finalQuestions[index]) && MSDisabledModules.Count == 0);
+        int repoIndex = RNG.Range(1, fetchedModules.Count + 1);
         int selectorIndex = RNG.Range(1, MSModules.Count + 1);
         int disabledIndex = RNG.Range(1, MSDisabledModules.Count + 1);
         int enabledIndex = RNG.Range(1, MSEnabledModules.Count + 1);
         string sortType = orderTypes[RNG.Range(0, orderTypes.Length)];
         //Debug.LogFormat("[Questioner module #{0}] Sort type is {1}.", moduleID, sortType);
         string rndModule = getModuleNameByID(MSModules[RNG.Range(0, MSModules.Count)]);
+        var bombSort = GetComponent<KMBombInfo>().GetSolvedModuleNames().Concat(GetComponent<KMBombInfo>().GetSolvableModuleNames()).ToList();
+        bombSort.Sort();
+        int bombIndex = RNG.Range(1, bombSort.Count + 1);
         string activeModule = "";
-           switch (index)
+           switch (set[index])
             {
-                case 0:
-                    activeModule = sortedModules[sortType][repoIndex - 1].Name;
-                    break;
-                case 1:
+                case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?":
                     activeModule = getModuleNameByID(MSModules[selectorIndex - 1]);
                     break;
-                case 2:
+                case "Is the {0} module on the repo sorted {2} loaded in the game?":
+                case "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?":
                     activeModule = sortedModules[sortType][repoIndex - 1].Name;
                     break;
-                case 3:
+                case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?":
                     //Debug.LogFormat("[Questioner module #{0}] Trying to get index {1} of {2}", moduleID, disabledIndex - 1, getSortageByProperty(sortType, MSDisabledModules).Count);
                     activeModule = getModuleNameByID(getSortageByProperty(sortType, MSDisabledModules)[disabledIndex - 1]);
                     break;
-                case 4:
+                case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?":
                     //Debug.LogFormat("[Questioner module #{0}] Trying to get index {1} of {2}", moduleID, enabledIndex - 1, getSortageByProperty(sortType, MSEnabledModules).Count);
                     activeModule = getModuleNameByID(getSortageByProperty(sortType, MSEnabledModules)[enabledIndex - 1]);
                     break;
-                case 5:
+                case "What is the {3} letter of the module that is loaded {1} in game?":
                     activeModule = getModuleNameByID(MSModules[selectorIndex - 1]);
                     break;
-                case 6:
+                case "Is {4} disabled by an enabled profile?":
                     activeModule = getModuleNameByID(rndModule);
                     break;
-                case 7:
+                case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)":
                     activeModule = getModuleNameByID(MSDisabledModules[disabledIndex - 1]);
                     break;
-                case 8:
+                case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)":
                     activeModule = getModuleNameByID(MSEnabledModules[enabledIndex - 1]);
                     break;
-            }
+                case "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?":
+                    activeModule = bombSort[bombIndex - 1];
+                    break;
+                case "What is the {3} letter of the module that is {7} on the bomb sorted Z-A?":
+                    bombSort.Reverse();
+                    activeModule = bombSort[bombIndex - 1];
+                    break;
+        }
 
         int letterIndex = RNG.Range(1, activeModule.Replace(" ","").Length + 1);
 
@@ -162,32 +200,34 @@ public class qkQuestionerModule : MonoBehaviour
         string finalLetterIndex = getStringByNum(letterIndex);
 
         string Answer = "";
-        switch(index)
+        switch(set[index])
         {
-            case 0:
+            case "Is the {0} module on the repo sorted {2} loaded in the game?":
                 Answer = MSModules.Contains(getModuleIDByName(activeModule)) ? "Yes" : "No";
                 toggleObject("BooleanButtons");
                 break;
-            case 1:
-                Answer = fetchedMoudles[repoIndex - 1].Name == activeModule ? "Yes" : "No";
+            case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?":
+                Answer = fetchedModules[repoIndex - 1].Name == activeModule ? "Yes" : "No";
                 toggleObject("BooleanButtons");
                 break;
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 7:
-            case 8:
+            case "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?":
+            case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?":
+            case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?":
+            case "What is the {3} letter of the module that is loaded {1} in game?":
+            case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)":
+            case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)":
+            case "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?":
+            case "What is the {3} letter of the module that is {7} on the bomb sorted Z-A?":
                 Answer = Letter;
                 toggleObject("LetteredButtons");
                 break;
-            case 6:
+            case "Is {4} disabled by an enabled profile?":
                 Answer = MSDisabledModules.Contains(getModuleIDByName(activeModule)) ? "Yes" : "No";
                 toggleObject("BooleanButtons");
                 break;
         }
 
-        return new Tuple<string, string>(String.Format(set[index], finalRepoIndex, finalSelectorIndex, sortType, finalLetterIndex, getModuleNameByID(rndModule), finalDisabledIndex, finalEnabledIndex), Answer);
+        return new Tuple<string, string>(String.Format(set[index], finalRepoIndex, finalSelectorIndex, sortType, finalLetterIndex, getModuleNameByID(rndModule), finalDisabledIndex, finalEnabledIndex, getStringByNum(bombIndex)), Answer);
     }
 
     string getStringByNum(int num)
@@ -211,7 +251,7 @@ public class qkQuestionerModule : MonoBehaviour
     private void sortModules()
     {
         sortedModules.Clear();
-        List<Module> tempList = fetchedMoudles;
+        List<Module> tempList = fetchedModules;
         sortedModules.Add("A-Z", tempList);
         tempList.Reverse();
         sortedModules.Add("Z-A", tempList);
@@ -287,14 +327,14 @@ public class qkQuestionerModule : MonoBehaviour
 
         tempList.Sort((a, b) => b.PublishDate.CompareTo(a.PublishDate));
         sortedModules.Add("Publish date (newest to oldest)", tempList);
-        tempList = fetchedMoudles;
+        tempList = fetchedModules;
         tempList.Sort((a, b) => a.PublishDate.CompareTo(b.PublishDate));
         sortedModules.Add("Publish date (oldest to newest)", tempList);
     }
 
     private void newStage()
     {
-        solvePair = getSolvePair(webQuestions);
+        solvePair = getSolvePair(finalQuestions);
         Debug.LogFormat("[Questioner module #{0}] Question is: {1}, answer is: {2}", moduleID, solvePair.First, solvePair.Second);
         stage++;
         List<string> question = solvePair.First.Split(new char[] { ' ' }).ToList();
@@ -331,8 +371,9 @@ public class qkQuestionerModule : MonoBehaviour
         return;
     }
 
-    private void toggleObject(string objName)
+    private void toggleObject(string objName, bool force = false)
     {
+        if (objName == "Error" && !force) return;
         togglableObjects["LetteredButtons"].SetActive(false);
         togglableObjects["BooleanButtons"].SetActive(false);
         togglableObjects[objName].SetActive(true);
@@ -341,7 +382,7 @@ public class qkQuestionerModule : MonoBehaviour
 
     private string getModuleNameByID(string ID)
     {
-        foreach(var Module in fetchedMoudles)
+        foreach(var Module in fetchedModules)
         {
             if (Module.ID == ID) return Module.Name;
         }
@@ -350,7 +391,7 @@ public class qkQuestionerModule : MonoBehaviour
 
     private string getModuleIDByName(string Name)
     {
-        foreach (var Module in fetchedMoudles)
+        foreach (var Module in fetchedModules)
         {
             if (Module.Name == Name) return Module.ID;
         }
@@ -371,6 +412,7 @@ public class qkQuestionerModule : MonoBehaviour
     }
 
 #pragma warning disable 414
+    [HideInInspector]
     public string TwitchHelpMessage = "Use '!{0} press <button>' to press a button (Can either be a letter (A-Z), yes, no, solve (If the error screen is present))";
 #pragma warning restore 414
     public IEnumerator ProcessTwitchCommand(string command)
