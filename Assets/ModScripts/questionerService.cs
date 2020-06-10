@@ -102,7 +102,7 @@ public class questionerService : MonoBehaviour
         List<Module> Modules = new List<Module>();
         foreach(var item in Deserialized.KtaneModules)
         {
-            if ((string)item["Type"] != "Widget" && (string)item[") Modules.Add(new Module(item));
+            if ((string)item["Type"] != "Widget" && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
         }
         return Modules;
     }
