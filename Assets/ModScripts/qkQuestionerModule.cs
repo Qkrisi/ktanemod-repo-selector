@@ -30,16 +30,16 @@ public class qkQuestionerModule : MonoBehaviour
     {
         "What is the {3} letter of the module that is loaded {1} in game?",
         "Is {4} disabled by an enabled profile?",
-        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)",
-        "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)"
+        "What is the {3} letter of the module that is the {5} one on a list of all disabled modules? (A-Z)",
+        "What is the {3} letter of the module that is the {6} one on a list of all enabled modules? (A-Z)"
     };
 
     private readonly string[] bothQuestions = new[]
     {
         "Is the {0} module on the repo sorted {2} loaded in the game?",
         "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?",
-        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?",
-        "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?",
+        "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?",
+        "What is the {3} letter of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?",
     };
 
     private readonly string[] neitherQuestions = new[]
@@ -62,8 +62,8 @@ public class qkQuestionerModule : MonoBehaviour
 
     private readonly string[] dependsOnDisableds = new string[]
     {
-        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)",
-        "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?"
+        "What is the {3} letter of the module that is the {5} one on a list of all disabled modules? (A-Z)",
+        "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?"
     };
 
     private questionerService Service;
@@ -167,11 +167,11 @@ public class qkQuestionerModule : MonoBehaviour
                 case "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?":
                     activeModule = sortedModules[sortType][repoIndex - 1].Name;
                     break;
-                case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?":
+                case "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?":
                     //Debug.LogFormat("[Questioner module #{0}] Trying to get index {1} of {2}", moduleID, disabledIndex - 1, getSortageByProperty(sortType, MSDisabledModules).Count);
                     activeModule = getModuleNameByID(getSortageByProperty(sortType, MSDisabledModules)[disabledIndex - 1]);
                     break;
-                case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?":
+                case "What is the {3} letter of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?":
                     //Debug.LogFormat("[Questioner module #{0}] Trying to get index {1} of {2}", moduleID, enabledIndex - 1, getSortageByProperty(sortType, MSEnabledModules).Count);
                     activeModule = getModuleNameByID(getSortageByProperty(sortType, MSEnabledModules)[enabledIndex - 1]);
                     break;
@@ -181,10 +181,10 @@ public class qkQuestionerModule : MonoBehaviour
                 case "Is {4} disabled by an enabled profile?":
                     activeModule = getModuleNameByID(rndModule);
                     break;
-                case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)":
+                case "What is the {3} letter of the module that is the {5} one on a list of all disabled modules? (A-Z)":
                     activeModule = getModuleNameByID(MSDisabledModules[disabledIndex - 1]);
                     break;
-                case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)":
+                case "What is the {3} letter of the module that is the {6} one on a list of all enabled modules? (A-Z)":
                     activeModule = getModuleNameByID(MSEnabledModules[enabledIndex - 1]);
                     break;
                 case "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?":
@@ -218,11 +218,11 @@ public class qkQuestionerModule : MonoBehaviour
                 toggleObject("BooleanButtons");
                 break;
             case "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?":
-            case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules sorted by {2} on the repo?":
-            case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules sorted by {2} on the repo?":
+            case "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?":
+            case "What is the {3} letter of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?":
             case "What is the {3} letter of the module that is loaded {1} in game?":
-            case "What is the {3} letter of the module that is the {5} one in a list of all disabled modules? (A-Z)":
-            case "What is the {3} letter of the module that is the {6} one in a list of all enabled modules? (A-Z)":
+            case "What is the {3} letter of the module that is the {5} one on a list of all disabled modules? (A-Z)":
+            case "What is the {3} letter of the module that is the {6} one on a list of all enabled modules? (A-Z)":
             case "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?":
             case "What is the {3} letter of the module that is {7} on the bomb sorted Z-A?":
                 Answer = Letter;
