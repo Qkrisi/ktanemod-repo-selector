@@ -83,7 +83,7 @@ public class qkQuestionerModule : MonoBehaviour
     static int moduleIDCounter;
 
     [HideInInspector]
-    public TextMesh displayText;
+    public TextMesh displayText = null;
 
     private Dictionary<string, GameObject> togglableObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, Tuple<KMSelectable, GameObject>> btnsForTP = new Dictionary<string, Tuple<KMSelectable, GameObject>>();
@@ -117,7 +117,7 @@ public class qkQuestionerModule : MonoBehaviour
             toggleObject("Error", true);
             yield break;
         }
-        yield return new WaitUntil(() => Service._done);
+        yield return new WaitUntil(() => Service._done && displayText != null);
         if(!Service.webQuestions && API==null)
         {
             finalQuestions = neitherQuestions.ToArray();
@@ -438,7 +438,7 @@ public class qkQuestionerModule : MonoBehaviour
         if(!btnsForTP.ContainsKey(command))
         {
             yield return null;
-            yield return "sendtochaterror Invalid key!";
+            yield return "sendtochaterror Invalid button!";
             yield break;
         }
         if(!btnsForTP[command].Second.activeInHierarchy)
