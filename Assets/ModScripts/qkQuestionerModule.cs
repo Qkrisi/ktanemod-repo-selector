@@ -435,16 +435,10 @@ public class qkQuestionerModule : MonoBehaviour
             yield break;
         }
         command = command.Replace("PRESS ", "");
-        if(!btnsForTP.ContainsKey(command))
+        if(!btnsForTP.ContainsKey(command) || !btnsForTP[command].Second.activeInHierarchy)
         {
             yield return null;
-            yield return "sendtochaterror Invalid button!";
-            yield break;
-        }
-        if(!btnsForTP[command].Second.activeInHierarchy)
-        {
-            yield return null;
-            yield return "sendtochaterror Looks like the button you're trying to press is not active right now.";
+            yield return "sendtochaterror Looks like the button you entered is either invalid or inactive!";
             yield break;
         }
         yield return null;

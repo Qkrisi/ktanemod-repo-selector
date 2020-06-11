@@ -1481,6 +1481,7 @@ GameObject:
   - component: {fileID: 114935408659860360}
   - component: {fileID: 114364813473155730}
   - component: {fileID: 114803000072213396}
+  - component: {fileID: 114299487075468788}
   m_Layer: 0
   m_Name: btn_solve
   m_TagString: Untagged
@@ -7049,6 +7050,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/DiffuseTint
+--- !u!114 &114299487075468788
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1816702576420760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36cc573e8a62e43a9b28543b13325f63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Text: solve
 --- !u!114 &114307980760945628
 MonoBehaviour:
   m_ObjectHideFlags: 1
