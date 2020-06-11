@@ -1,22 +1,8 @@
-﻿using System.Collections;
-using UnityEngine;
-
-public class answerButton : MonoBehaviour {
-
-    private string text;
-
-    qkQuestionerModule Instance { get { return transform.parent.parent.GetComponent<qkQuestionerModule>(); } }
-
-    IEnumerator Start()
+﻿public class answerButton : ButtonBase 
+{
+    protected override bool OnClicked(string t)
     {
-        yield return new WaitUntil(() => Instance != null);
-        text = transform.Find("btn_text").GetComponent<TextMesh>().text;
-        Instance.btnsForTP.Add(text.ToUpperInvariant(), new Tuple<KMSelectable, GameObject>(GetComponent<KMSelectable>(), transform.parent.gameObject));
-        GetComponent<KMSelectable>().OnInteract += () => OnClicked(text);
-    }
-
-    private bool OnClicked(string t)
-    {
+        base.OnClicked(t);
         if (Instance._solved) return false;
         Instance.registerAns(t);
         return false;

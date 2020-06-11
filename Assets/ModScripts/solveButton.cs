@@ -1,19 +1,8 @@
-﻿using System.Collections;
-using UnityEngine;
-
-public class solveButton : MonoBehaviour
+﻿public class solveButton : ButtonBase
 {
-    qkQuestionerModule Instance { get { return transform.parent.parent.GetComponent<qkQuestionerModule>(); } }
-
-    IEnumerator Start()
+    protected override bool OnClicked(string t)
     {
-        yield return new WaitUntil(() => Instance != null);
-        Instance.btnsForTP.Add("SOLVE", new Tuple<KMSelectable, GameObject>(GetComponent<KMSelectable>(), transform.parent.gameObject));
-        GetComponent<KMSelectable>().OnInteract += OnClick;
-    }
-
-    private bool OnClick()
-    {
+        base.OnClicked(t);
         if (!Instance.grantSolve) return false;
         Instance._solved = true;
         Instance.GetComponent<KMBombModule>().HandlePass();

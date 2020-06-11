@@ -28,7 +28,7 @@ public class questionerService : MonoBehaviour
     {
         GetComponent<KMGameInfo>().OnStateChange += StateChange;
         yield return null;
-        StartCoroutine(FetchModules());
+        StateChange(KMGameInfo.State.Setup);
         yield break;
     }
 

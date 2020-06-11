@@ -82,7 +82,9 @@ public class qkQuestionerModule : MonoBehaviour
     private int moduleID;
     static int moduleIDCounter;
 
+    [HideInInspector]
     public TextMesh displayText;
+
     private Dictionary<string, GameObject> togglableObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, Tuple<KMSelectable, GameObject>> btnsForTP = new Dictionary<string, Tuple<KMSelectable, GameObject>>();
 
@@ -94,14 +96,14 @@ public class qkQuestionerModule : MonoBehaviour
 
     IEnumerator Start()
     {
-        moduleID = moduleIDCounter++;
+        moduleID = ++moduleIDCounter;
         Service = FindObjectOfType<questionerService>();
         //Debug.Log("Setting dict");
         togglableObjects = new Dictionary<string, GameObject>()
         {
-            { "LetteredButtons", transform.Find("LetteredButtons").gameObject},
-            { "BooleanButtons", transform.Find("BooleanButtons").gameObject},
-            { "Error", transform.Find("Error").gameObject}
+            { "LetteredButtons", findFromRoot("LetteredButtons")},
+            { "BooleanButtons", findFromRoot("BooleanButtons")},
+            { "Error", findFromRoot("Error")}
         };
         //Debug.Log("Setting to true");
         ableToSet = true;
@@ -136,6 +138,11 @@ public class qkQuestionerModule : MonoBehaviour
         newStage();
     }
 
+    private GameObject findFromRoot(string name)
+    {
+        return transform.Find("Objects").Find(name).gameObject;
+    }
+
     private Tuple<string, string> getSolvePair(string[] set) //First: question, Second: answer
     {
         int index = -1;
@@ -146,7 +153,7 @@ public class qkQuestionerModule : MonoBehaviour
         int enabledIndex = RNG.Range(1, MSEnabledModules.Count + 1);
         string sortType = orderTypes[RNG.Range(0, orderTypes.Length)];
         //Debug.LogFormat("[Questioner module #{0}] Sort type is {1}.", moduleID, sortType);
-        string rndModule = getModuleNameByID(MSModules[RNG.Range(0, MSModules.Count)]);
+        string rndModule = API!=null ? getModuleNameByID(MSModules[RNG.Range(0, MSModules.Count)]) : "";
         var bombSort = GetComponent<KMBombInfo>().GetSolvedModuleNames().Concat(GetComponent<KMBombInfo>().GetSolvableModuleNames()).ToList();
         bombSort.Sort();
         int bombIndex = RNG.Range(1, bombSort.Count + 1);
@@ -400,14 +407,17 @@ public class qkQuestionerModule : MonoBehaviour
 
     private List<string> getSelectorModules()
     {
+        if (API == null) return new List<string>();
         return ((IEnumerable<string>)API["AllSolvableModules"]).Concat((IEnumerable<string>)API["AllNeedyModules"]).ToList();
     }
     private List<string> getDisabledModules()
     {
+        if (API == null) return new List<string>();
         return ((IEnumerable<string>)API["DisabledSolvableModules"]).Concat((IEnumerable<string>)API["DisabledNeedyModules"]).ToList();
     }
     private List<string> getEnabledModules()
     {
+        if (API == null) return new List<string>();
         return getSelectorModules().Except(getDisabledModules()).ToList();
     }
 
