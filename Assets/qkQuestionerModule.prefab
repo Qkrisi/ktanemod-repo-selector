@@ -1780,7 +1780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36cc573e8a62e43a9b28543b13325f63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Text: 
+  Text: solve
 --- !u!114 &114022726061673316
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2013,8 +2013,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4488964e85d74b049b01daaa57bb144, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  addToTP: 0
-  move: 0
+  addToTP: 2
+  move: 1
 --- !u!114 &114471446421410724
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2112,7 +2112,7 @@ MonoBehaviour:
   _solved: 0
   displayText: {fileID: 0}
   grantSolve: 0
-  inputText: {fileID: 0}
+  inputText: {fileID: 102880556156277416}
   _input: 0
   TwitchHelpMessage: Use '!{0} submit <answer>' to submit an answer! Use '!{0} press
     solve' to solve the module if the error screen is present!
@@ -2203,7 +2203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36cc573e8a62e43a9b28543b13325f63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Text: 
+  Text: RightButton
 --- !u!114 &114774773517350502
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2340,7 +2340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d76862d5103a24c5ead2ba878f6359d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  addToTP: 0
+  addToTP: 1
 --- !u!114 &114954186344384294
 MonoBehaviour:
   m_ObjectHideFlags: 1
