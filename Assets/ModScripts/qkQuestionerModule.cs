@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Questioner;
 using RNG = UnityEngine.Random;
 
 public class qkQuestionerModule : MonoBehaviour
@@ -66,6 +67,54 @@ public class qkQuestionerModule : MonoBehaviour
         "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?"
     };
 
+    private LoopingList<string> answerSet = new LoopingList<string>();
+
+    private readonly List<string> boolAns = new List<string>()
+    {
+        "YES",
+        "NO"
+    };
+
+    private readonly List<string> letterAns = new List<string>()
+    {
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+    };
+
     private questionerService Service;
     private IDictionary<string, object> API { get { try { return Service.modSelectorAPI; } catch { toggleObject("Error"); return null; } } }
     [HideInInspector]
@@ -87,12 +136,40 @@ public class qkQuestionerModule : MonoBehaviour
 
     private Dictionary<string, GameObject> togglableObjects = new Dictionary<string, GameObject>();
     public Dictionary<string, Tuple<KMSelectable, GameObject>> btnsForTP = new Dictionary<string, Tuple<KMSelectable, GameObject>>();
+    public Dictionary<string, Tuple<KMSelectable, GameObject>> tpDisabled = new Dictionary<string, Tuple<KMSelectable, GameObject>>();
 
     [HideInInspector]
     public bool grantSolve = false;
     protected bool ableToSet = false;
 
     private int stage = 0;
+
+    private int index = 0;
+
+    public TextMesh inputText;
+
+    private Material redMat;
+    private GameObject statusC;
+
+    private LoopingList<string> getBaseList(Func<string> bases)
+    {
+        return new LoopingList<string>(new List<string>(bases().Select(c => c.ToString())));
+    }
+
+    [HideInInspector]
+    public bool _input = false;
+
+    private string modifyName(string module)
+    {
+        module = module.ToUpperInvariant();
+        var l = new List<string>(module.Select(c => c.ToString()));
+        var final = new List<string>();
+        foreach(string c in l)
+        {
+            if (letterAns.Contains(c)) final.Add(c);
+        }
+        return String.Join("", final.ToArray());
+    }
 
     IEnumerator Start()
     {
@@ -101,8 +178,8 @@ public class qkQuestionerModule : MonoBehaviour
         //Debug.Log("Setting dict");
         togglableObjects = new Dictionary<string, GameObject>()
         {
-            { "LetteredButtons", findFromRoot("LetteredButtons")},
-            { "BooleanButtons", findFromRoot("BooleanButtons")},
+            /*{ "LetteredButtons", findFromRoot("LetteredButtons")},
+            { "BooleanButtons", findFromRoot("BooleanButtons")},*/
             { "Error", findFromRoot("Error")}
         };
         //Debug.Log("Setting to true");
@@ -113,17 +190,25 @@ public class qkQuestionerModule : MonoBehaviour
         }
         if(Service==null)
         {
+            Logger("Couldn't find service. Activating error screen...");
             grantSolve = true;
             toggleObject("Error", true);
             yield break;
         }
+        Logger("Waiting for service to finish...");
         yield return new WaitUntil(() => Service._done && displayText != null);
+        Logger("Service finished, generating question...");
+        foreach (string l in Service.toLog) Logger(l);
+        redMat = findFromRoot("RedOBJ").GetComponent<Renderer>().material;
+        statusC = findFromRoot("Display").transform.Find("Sphere").gameObject;
         if(!Service.webQuestions && API==null)
         {
+            statusC.GetComponent<Renderer>().material = redMat;
             finalQuestions = neitherQuestions.ToArray();
         }
         else if(!Service.webQuestions && API!=null)
         {
+            statusC.GetComponent<Renderer>().material = redMat;
             finalQuestions = selectorQuestions.ToArray().Concat(neitherQuestions).ToArray();
         }
         else if(Service.webQuestions && API==null)
@@ -134,13 +219,34 @@ public class qkQuestionerModule : MonoBehaviour
         {
             finalQuestions = webQuestions.ToArray().Concat(selectorQuestions).Concat(neitherQuestions).Concat(bothQuestions).ToArray();
         }
+        findFromRoot("Error").SetActive(false);
         sortModules();
         newStage();
+        StartCoroutine(Blinker());
+        if(API!=null) Logger(String.Format("Light is {0}, Selector modules ordered by their {1}s: {2}", Service.webQuestions ? "green" : "red", Service.webQuestions ? "sort key" : "ID", String.Join(", ", getSelectorModules().ToArray())));
     }
 
-    private GameObject findFromRoot(string name)
+    private IEnumerator Blinker()
     {
-        return transform.Find("Objects").Find(name).gameObject;
+        while(!_solved)
+        {
+            statusC.GetComponent<Renderer>().enabled = false;
+            yield return new WaitForSeconds(.5f);
+            statusC.GetComponent<Renderer>().enabled = true;
+            yield return new WaitForSeconds(.5f);
+        }
+        yield return null;
+        statusC.GetComponent<Renderer>().enabled = false;
+    }
+
+    private GameObject findFromRoot(string _name)
+    {
+        return transform.Find("Objects").Find(_name).gameObject;
+    }
+
+    void Logger(string l)
+    {
+        Debug.LogFormat("[Questioner #{0}] {1}", moduleID, l);
     }
 
     private Tuple<string, string> getSolvePair(string[] set) //First: question, Second: answer
@@ -195,10 +301,11 @@ public class qkQuestionerModule : MonoBehaviour
                     activeModule = bombSort[bombIndex - 1];
                     break;
         }
+        var newActive = modifyName(activeModule);
 
-        int letterIndex = RNG.Range(1, activeModule.Replace(" ","").Length + 1);
+        int letterIndex = RNG.Range(1, newActive.Length + 1);
 
-        string Letter = activeModule.Replace(" ","")[letterIndex - 1].ToString().ToUpperInvariant();
+        string Letter = newActive[letterIndex - 1].ToString().ToUpperInvariant();
 
         string finalRepoIndex = getStringByNum(repoIndex);
         string finalSelectorIndex = getStringByNum(selectorIndex);
@@ -210,12 +317,14 @@ public class qkQuestionerModule : MonoBehaviour
         switch(set[index])
         {
             case "Is the {0} module on the repo sorted {2} loaded in the game?":
-                Answer = MSModules.Contains(getModuleIDByName(activeModule)) ? "Yes" : "No";
-                toggleObject("BooleanButtons");
+                Answer = MSModules.Contains(getModuleIDByName(activeModule)) ? "YES" : "NO";
+                //toggleObject("BooleanButtons");
+                answerSet = new LoopingList<string>(boolAns);
                 break;
             case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?":
-                Answer = fetchedModules[repoIndex - 1].Name == activeModule ? "Yes" : "No";
-                toggleObject("BooleanButtons");
+                Answer = fetchedModules[repoIndex - 1].Name == activeModule ? "YES" : "NO";
+                //toggleObject("BooleanButtons");
+                answerSet = new LoopingList<string>(boolAns);
                 break;
             case "What is the {3} letter of the module that is the {0} on the repo sorted by {2}?":
             case "What is the {3} letter of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?":
@@ -226,14 +335,16 @@ public class qkQuestionerModule : MonoBehaviour
             case "What is the {3} letter of the module that is {7} on the bomb sorted A-Z?":
             case "What is the {3} letter of the module that is {7} on the bomb sorted Z-A?":
                 Answer = Letter;
-                toggleObject("LetteredButtons");
+                //toggleObject("LetteredButtons");
+                answerSet = new LoopingList<string>(letterAns);
                 break;
             case "Is {4} disabled by an enabled profile?":
-                Answer = MSDisabledModules.Contains(getModuleIDByName(activeModule)) ? "Yes" : "No";
-                toggleObject("BooleanButtons");
+                Answer = MSDisabledModules.Contains(getModuleIDByName(activeModule)) ? "YES" : "NO";
+                //toggleObject("BooleanButtons");
+                answerSet = new LoopingList<string>(boolAns);
                 break;
         }
-
+        Logger(String.Format("Active module: {0}", activeModule));
         return new Tuple<string, string>(String.Format(set[index], finalRepoIndex, finalSelectorIndex, sortType, finalLetterIndex, getModuleNameByID(rndModule), finalDisabledIndex, finalEnabledIndex, getStringByNum(bombIndex)), Answer);
     }
 
@@ -258,10 +369,10 @@ public class qkQuestionerModule : MonoBehaviour
     private void sortModules()
     {
         sortedModules.Clear();
-        List<Module> tempList = fetchedModules;
-        sortedModules.Add("A-Z", tempList);
+        List<Module> tempList = fetchedModules.ToList();
+        sortedModules.Add("A-Z", tempList.ToList());
         tempList.Reverse();
-        sortedModules.Add("Z-A", tempList);
+        sortedModules.Add("Z-A", tempList.ToList());
         tempList.Reverse();
 
         List<Module> veryEasy = new List<Module>();
@@ -331,42 +442,63 @@ public class qkQuestionerModule : MonoBehaviour
         Hard.Reverse();
         veryHard.Reverse();
         sortedModules.Add("Expert difficulty (very hard - very easy)", veryHard.Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).ToList());
-
-        tempList.Sort((a, b) => b.PublishDate.CompareTo(a.PublishDate));
-        sortedModules.Add("Publish date (newest to oldest)", tempList);
-        tempList = fetchedModules;
-        tempList.Sort((a, b) => a.PublishDate.CompareTo(b.PublishDate));
-        sortedModules.Add("Publish date (oldest to newest)", tempList);
+            
+        tempList = tempList.OrderBy(x => x.PublishDate).ThenByDescending(x => x.SortKey).ToList();
+        sortedModules.Add("Publish date (oldest to newest)", tempList.ToList());
+        tempList.Reverse();
+        sortedModules.Add("Publish date (newest to oldest)", tempList.ToList());
+        if (!Service.webQuestions) return;
+        foreach(KeyValuePair<string, List<Module>> pair in sortedModules)
+        {
+            Logger(String.Format("Modules sorted by {0}: {1}", pair.Key, String.Join(", ", pair.Value.Select(item => item.ID).ToArray())));
+        }
     }
 
     private void newStage()
     {
         solvePair = getSolvePair(finalQuestions);
-        Debug.LogFormat("[Questioner module #{0}] Question is: {1}, answer is: {2}", moduleID, solvePair.First, solvePair.Second);
+        index = 0;
+        Logger(String.Format("Question is: '{0}', answer is: '{1}'", solvePair.First, solvePair.Second));
         stage++;
         List<string> question = solvePair.First.Split(new char[] { ' ' }).ToList();
         string modified = "";
         int Counter = 0;
         while(question.Count>0)
         {
+            bool _break = false;
             modified = Counter==0 ? modified + question[0] : modified + " " + question[0];
+            if (question[0].Length > 12) _break = true;
             question.RemoveAt(0);
             Counter++;
-            if(Counter==4)
+            if(_break || Counter==4)
             {
                 modified = modified + "\n";
                 Counter = 0;
             }
         }
-        displayText.text = modified;
+        StartCoroutine(newText(modified));
         return;
+    }
+
+    private IEnumerator newText(string modified)
+    {
+        yield return writeText(displayText, modified);
+        yield return writeText(inputText, answerSet[index]);
     }
 
     public void registerAns(string answer)
     {
         if (answer == solvePair.Second)
         {
-            if (stage == 3) { GetComponent<KMBombModule>().HandlePass(); _solved = true; displayText.text = ""; return; }
+            if (stage == 3)
+            { 
+                GetComponent<KMBombModule>().HandlePass();
+                _solved = true;
+                index = 0;
+                answerSet = new LoopingList<string>() { "GG!" };
+                StartCoroutine(newText("Module solved :D"));
+                return;
+            }
             newStage();
         }
         else
@@ -378,11 +510,52 @@ public class qkQuestionerModule : MonoBehaviour
         return;
     }
 
+    public void StartMove(Move move)
+    {
+        index += move == Move.Left ? -1 : 1;
+        if (index == answerSet.Count) index = 0;
+        if (index == -1) index = answerSet.Count - 1;
+        StartCoroutine(writeText(inputText, answerSet[index]));
+    }
+
+    IEnumerator writeText(TextMesh display, string q)
+    {
+        yield return stringWriter(() => display.text, (s) => display.text = s);
+        yield return stringWriter(() => q, (s) => display.text = s, Modifier.Add);
+    }
+
+    public IEnumerator stringWriter(Func<string> bases, Action<string> modify, Modifier modifier = Modifier.Remove)
+    {
+        _input = false;
+        if (modifier == Modifier.Remove)
+        {
+            while (bases().Length > 0)
+            {
+                LoopingList<string> cList = getBaseList(bases);
+                cList.RemoveAt(cList.Count-1);
+                modify(String.Join("", cList.ToArray()));
+                yield return new WaitForSeconds(.05f);
+            }
+            _input = true;
+            yield break;
+        }
+        LoopingList<string> chList = getBaseList(bases);
+        List<string> final = new List<string>();
+        while(chList.Count > 0)
+        {
+            final.Add(chList[0]);
+            chList.RemoveAt(0);
+            modify(String.Join("", final.ToArray()));
+            yield return new WaitForSeconds(.05f);
+        }
+        _input = true;
+    }
+
     private void toggleObject(string objName, bool force = false)
     {
         if (objName == "Error" && !force) return;
-        togglableObjects["LetteredButtons"].SetActive(false);
-        togglableObjects["BooleanButtons"].SetActive(false);
+        /*togglableObjects["LetteredButtons"].SetActive(false);
+        togglableObjects["BooleanButtons"].SetActive(false);*/
         togglableObjects[objName].SetActive(true);
         return;
     }
@@ -405,44 +578,118 @@ public class qkQuestionerModule : MonoBehaviour
         return Name;
     }
 
+    private string getModuleSortKeyByID(string ID)
+    {
+        foreach(var Module in fetchedModules)
+        {
+            if (Module.ID == ID) return Module.SortKey;
+        }
+        return ID;
+    }
+
     private List<string> getSelectorModules()
     {
         if (API == null) return new List<string>();
-        return ((IEnumerable<string>)API["AllSolvableModules"]).Concat((IEnumerable<string>)API["AllNeedyModules"]).ToList();
+        var got = ((IEnumerable<string>)API["AllSolvableModules"]).Concat((IEnumerable<string>)API["AllNeedyModules"]).ToList();
+        if(!Service.webQuestions)
+        {
+            got.Sort();
+            return got;
+        }
+        return pairModules(got);
     }
     private List<string> getDisabledModules()
     {
         if (API == null) return new List<string>();
-        return ((IEnumerable<string>)API["DisabledSolvableModules"]).Concat((IEnumerable<string>)API["DisabledNeedyModules"]).ToList();
+        var got = ((IEnumerable<string>)API["DisabledSolvableModules"]).Concat((IEnumerable<string>)API["DisabledNeedyModules"]).ToList();
+        if (!Service.webQuestions)
+        {
+            got.Sort();
+            return got;
+        }
+        return pairModules(got);
     }
     private List<string> getEnabledModules()
     {
         if (API == null) return new List<string>();
-        return getSelectorModules().Except(getDisabledModules()).ToList();
+        var got = getSelectorModules().Except(getDisabledModules()).ToList();
+        if (!Service.webQuestions)
+        {
+            got.Sort();
+            return got;
+        }
+        return pairModules(got);
+    }
+
+    private List<string> pairModules(List<string> bases)
+    {
+        var modulePairs = new List<Tuple<string, string>>();
+        foreach (string mID in bases) modulePairs.Add(new Tuple<string, string>(mID, getModuleSortKeyByID(mID)));
+        modulePairs = modulePairs.OrderBy(item => item.Second).ToList();
+        var final = new List<string>();
+        foreach (var _m in modulePairs)
+        {
+            final.Add(_m.First);
+        }
+        return final;
+    }
+
+    private IEnumerator TwitchHandleForcedSolve()
+    {
+        if(grantSolve)
+        {
+            yield return ProcessTwitchCommand("press solve");
+            yield break;
+        }
+        while (!_solved) yield return ProcessTwitchCommand(String.Format("submit {0}", solvePair.Second));
     }
 
 #pragma warning disable 414
     [HideInInspector]
-    public string TwitchHelpMessage = "Use '!{0} press <button>' to press a button (Can either be a letter (A-Z), yes, no, solve (If the error screen is present))";
+    public string TwitchHelpMessage = "Use '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present!";
 #pragma warning restore 414
     public IEnumerator ProcessTwitchCommand(string command)
     {
         command = command.ToUpperInvariant();
-        if(!command.StartsWith("PRESS"))
+        if(command.StartsWith("PRESS "))
         {
+            command = command.Replace("PRESS ", "");
+            if (!btnsForTP.ContainsKey(command) || !btnsForTP[command].Second.activeInHierarchy)
+            {
+                yield return null;
+                yield return "sendtochaterror Looks like the button you entered is either invalid or inactive!";
+                yield break;
+            }
             yield return null;
-            yield return "sendtochaterror Commands have to start with 'press'!";
+            btnsForTP[command].First.OnInteract();
             yield break;
         }
-        command = command.Replace("PRESS ", "");
-        if(!btnsForTP.ContainsKey(command) || !btnsForTP[command].Second.activeInHierarchy)
+        if(!command.StartsWith("SUBMIT "))
         {
             yield return null;
-            yield return "sendtochaterror Looks like the button you entered is either invalid or inactive!";
+            yield return "sendtochaterror Commands must start with 'press' or 'submit'!";
             yield break;
         }
-        yield return null;
-        btnsForTP[command].First.OnInteract();
-        yield break;
+        if(grantSolve)
+        {
+            yield return null;
+            yield return "sendtochaterror The error screen is present, please use the 'press solve' command to solve the module!";
+            yield break;
+        }
+        command = command.Replace("SUBMIT ", "");
+        yield return new WaitUntil(() => _input);
+        if (!answerSet.Contains(command))
+        {
+            yield return null;
+            yield return "sendtochaterror Answer is invalid!";
+            yield break;
+        }
+        while(inputText.text != command)
+        {
+            yield return null;
+            tpDisabled["RightButton"].First.OnInteract();
+            yield return new WaitUntil(() => _input);
+        }
+        findFromRoot("Display").transform.Find("enter").GetComponent<KMSelectable>().OnInteract();
     }
 }

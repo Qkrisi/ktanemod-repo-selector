@@ -17,6 +17,9 @@ public class questionerService : MonoBehaviour
     public List<Module> modulesFromWeb = new List<Module>();
 
     [HideInInspector]
+    public List<string> toLog = new List<string>();
+
+    [HideInInspector]
     public bool webQuestions = false;
 
     [HideInInspector]
@@ -24,9 +27,11 @@ public class questionerService : MonoBehaviour
 
     public IDictionary<string, object> modSelectorAPI = null;
 
+    private bool _changed = false;
+
     IEnumerator Start()
     {
-        GetComponent<KMGameInfo>().OnStateChange += StateChange;
+        ChangeStateChanger();
         yield return null;
         StateChange(KMGameInfo.State.Setup);
         yield break;
@@ -35,10 +40,11 @@ public class questionerService : MonoBehaviour
     IEnumerator FetchModules()
     {
         _done = false;
+        toLog.Clear();
         GameObject modSelectorObject = GameObject.Find("ModSelector_Info");
         if (modSelectorObject == null)
         {
-            Debug.Log("ModSelector is not loaded");
+            toLog.Add("ModSelector is not loaded");
         }
         else { modSelectorAPI = modSelectorObject.GetComponent<IDictionary<string, object>>(); }
         Fetch = new WWW("https://ktane.timwi.de/json/raw");
@@ -47,11 +53,11 @@ public class questionerService : MonoBehaviour
         {
             modulesFromWeb = Processjson(Fetch.text);
             webQuestions = true;
-            Debug.Log("Modules successfully fetched!");
+            toLog.Add("Modules successfully fetched!");
         }
         else
         {
-            Debug.LogFormat("An error has occurred while fetching modules from the repository: {0}", Fetch.error);
+            toLog.Add(String.Format("An error has occurred while fetching modules from the repository: {0}", Fetch.error));
             _done = true;
             yield break;
         }
@@ -67,24 +73,39 @@ public class questionerService : MonoBehaviour
             //Debug.LogFormat("Checking module by id: {0}", mID);
             if (!doesExist(mID)) { toAdd.Add(mID); }
         }
-        DateTime dateTime = DateTime.UtcNow.Date;
+        DateTime dateTime = DateTime.Now.Date;
         foreach (string ID in toAdd)
         {
-            Debug.LogFormat("Found unuploaded module: {0}", ID);
+            string sKey = !ID.ToLowerInvariant().StartsWith("the") ? ID.ToUpperInvariant() : ID.ToUpperInvariant().Substring(3);
+            toLog.Add(String.Format("Found unuploaded module: {0}", ID));
             modulesFromWeb.Add(new Module(
                 new Dictionary<string, object>()
                 {
                     {"Name", ID},
                     {"ModuleID", ID},
+                    {"SortKey", sKey.Replace(" ","")},
                     {"DefuserDifficulty", "Easy"},
                     {"ExpertDifficulty", "Medium"},
                     {"Published", dateTime.ToString("yyyy-MM-dd")}
                 }
                 ));
         }
-        modulesFromWeb = modulesFromWeb.OrderBy(x => x.Name).ToList();
+        modulesFromWeb = modulesFromWeb.OrderBy(x => x.SortKey).ToList();
         //Debug.LogFormat("Name of the last module: {0}", modulesFromWeb[modulesFromWeb.Count-1].Name);
         _done = true;
+    }
+
+    void OnEnable()
+    {
+        ChangeStateChanger();
+        StateChange(KMGameInfo.State.Setup);
+    }
+
+    void ChangeStateChanger()
+    {
+        if (_changed) return;
+        GetComponent<KMGameInfo>().OnStateChange += StateChange;
+        _changed = true;
     }
 
     void StateChange(KMGameInfo.State state)

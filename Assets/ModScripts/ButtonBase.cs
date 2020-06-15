@@ -1,28 +1,43 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Questioner;
 
-public abstract class ButtonBase : MonoBehaviour
+public abstract class ButtonBase : ObjectBase
 {
-    protected qkQuestionerModule Instance { get { return transform.parent.parent.parent.GetComponent<qkQuestionerModule>(); } }
+    public TPAdd addToTP = TPAdd.No;
 
     private IEnumerator Start()
     {
-        yield return new WaitUntil(() => Instance != null);
+        //yield return new WaitWhile(() => Instance == null);       idk why this doesn't work for (and only) the solve button but the following while loop works
+        while (Instance == null) yield return null;
         string text = getText();
-        Instance.btnsForTP.Add(text.ToUpperInvariant(), new Tuple<KMSelectable, GameObject>(GetComponent<KMSelectable>(), transform.parent.gameObject));
-        GetComponent<KMSelectable>().OnInteract += () => OnClicked(text);
+        switch (addToTP)
+        {
+            case TPAdd.Add:
+                Instance.btnsForTP.Add(text.ToUpperInvariant(), new Tuple<KMSelectable, GameObject>(GetComponent<KMSelectable>(), transform.parent.gameObject));
+                break;
+            case TPAdd.Disable:
+                Instance.tpDisabled.Add(text, new Tuple<KMSelectable, GameObject>(GetComponent<KMSelectable>(), transform.parent.gameObject));
+                break;
+        }
+        GetComponent<KMSelectable>().OnInteract += Click;
     }
 
     private string getText()
     {
         var Override = GetComponent<TextOverride>();
-        return Override == null ? transform.Find("btn_text").GetComponent<TextMesh>().text : Override.Text;
+        return Override == null ? Instance.inputText.text : Override.Text;
     }
 
-    protected virtual bool OnClicked(string t)
+    private bool Click()
+    {
+        OnClicked(getText());
+        return false;
+    }
+
+    protected virtual void OnClicked(string t)
     {
         GetComponent<KMSelectable>().AddInteractionPunch(.5f);
         Instance.GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
-        return false;
     }
 }
