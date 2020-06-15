@@ -159,6 +159,14 @@ public class qkQuestionerModule : MonoBehaviour
     [HideInInspector]
     public bool _input = false;
 
+    private bool _colorblind
+    {
+        set
+        {
+            setColorblind(value);
+        }
+    }
+
     private string modifyName(string module)
     {
         module = module.ToUpperInvariant();
@@ -204,11 +212,13 @@ public class qkQuestionerModule : MonoBehaviour
         if(!Service.webQuestions && API==null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
+            findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
             finalQuestions = neitherQuestions.ToArray();
         }
         else if(!Service.webQuestions && API!=null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
+            findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
             finalQuestions = selectorQuestions.ToArray().Concat(neitherQuestions).ToArray();
         }
         else if(Service.webQuestions && API==null)
@@ -224,6 +234,7 @@ public class qkQuestionerModule : MonoBehaviour
         newStage();
         StartCoroutine(Blinker());
         if(API!=null) Logger(String.Format("Light is {0}, Selector modules ordered by their {1}s: {2}", Service.webQuestions ? "green" : "red", Service.webQuestions ? "sort key" : "ID", String.Join(", ", getSelectorModules().ToArray())));
+        _colorblind = GetComponent<KMColorblindMode>().ColorblindModeActive;
     }
 
     private IEnumerator Blinker()
@@ -634,6 +645,11 @@ public class qkQuestionerModule : MonoBehaviour
         return final;
     }
 
+    private void setColorblind(bool v)
+    {
+        if (v) findFromRoot("colorblindText").GetComponent<Renderer>().enabled = true;
+    }
+
     private IEnumerator TwitchHandleForcedSolve()
     {
         if(grantSolve)
@@ -646,12 +662,18 @@ public class qkQuestionerModule : MonoBehaviour
 
 #pragma warning disable 414
     [HideInInspector]
-    public string TwitchHelpMessage = "Use '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present!";
+    public string TwitchHelpMessage = "Use '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present! Use '!{0} colorblind' to enable colorblind mode!";
 #pragma warning restore 414
     public IEnumerator ProcessTwitchCommand(string command)
     {
         command = command.ToUpperInvariant();
-        if(command.StartsWith("PRESS "))
+        if(command=="COLORBLIND")
+        {
+            yield return null;
+            _colorblind = true;
+            yield break;
+        }
+        if (command.StartsWith("PRESS "))
         {
             command = command.Replace("PRESS ", "");
             if (!btnsForTP.ContainsKey(command) || !btnsForTP[command].Second.activeInHierarchy)
@@ -667,7 +689,7 @@ public class qkQuestionerModule : MonoBehaviour
         if(!command.StartsWith("SUBMIT "))
         {
             yield return null;
-            yield return "sendtochaterror Commands must start with 'press' or 'submit'!";
+            yield return "sendtochaterror Commands must start with 'press', 'submit' or 'colorblind'!";
             yield break;
         }
         if(grantSolve)

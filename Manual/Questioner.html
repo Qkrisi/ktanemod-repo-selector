@@ -25,12 +25,14 @@
                     On the module you see:
                     <ul>
 						<li>A display with a question on it</li>
-						<li>Either an A-Z keyboard or a Yes-No keyboard</li>
+						<li>Two buttons pointing left and right</li>
+						<li>A submit button (enter)</li>
+						<li>A blinking LED (green or red)</li>
                     </ul>
                     If you don't, you either:
                     <ul>
 						<li>Clicked on the wrong manual :P</li>
-						<li>Have a screen covering the module saying "Please enable questionerService!". If this is the case, you most likely disabled the "questionerService" in Mod Selector. You can solve the module by clicking on the "Solve module" button.</li>
+						<li>Have a BSoD screen on the module in which case you've disabled questionerService in Mod Selector. Please enable it! But for now, click on the last line to solve the module!</li>
                     </ul>
                     You need to answer 3 questions, and the module will solve. If you get one wrong, the whole module resets.
                     <br>
@@ -46,7 +48,7 @@
 						<li>Is the Xth module loaded in the game (A-Z) the same module as the Xth module on the repo sorted {sorting method}?</li>
 						<li>What is the Xth letter of the module that is the Yth one on a list of all disabled modules sorted by {sorting method} on the repo?</li>
 						<li>What is the Xth letter of the module that is the Yth one on a list of all enabled modules sorted by {sorting method} on the repo?</li>
-						<li>What is the Xth letter of the module that is Yth on the bomb sorted {A-Z/Z-A}</li>
+						<li>What is the Xth letter of the module that is Yth on the bomb sorted {A-Z/Z-A} (Use the name of the modules to sort them here)</li>
                     </ul>
                     <b>Exclude vanilla modules except for the last question!</b>
                 </div>
@@ -69,6 +71,10 @@
 						<li>Publish date (newest to oldest)</li>
 						<li>Publish date (oldest to newest)</li>
 					</ul>
+					<b>Note:</b> When sorting <u>the repo</u> (see Mod Selector sorting below), always use the sort keys of the modules (like the repo does) as a secondary sorting method (alphabetical order), unless the sorting method is A-Z or Z-A, in which case use it as the primary sorting method.
+					<br>
+					<i>Sort key</i> is the name of the module (except for fake modules) in all caps, without the initial "the" and without spaces.
+					<br><br>
 					Each module that is loaded in the game but isn't present on the repo will have a fake profile with the following information:
 					<table>
 						<tbody>
@@ -85,6 +91,10 @@
 								<th>ID of the module</th>
 							</tr>
 							<tr>
+								<th>Sort Key</th>
+								<th>ID of the module in all caps, without the intial "the" and without spaces</th>
+							</tr>
+							<tr>
 								<th>Defuser Difficulty</th>
 								<th>Easy</th>
 							</tr>
@@ -94,10 +104,16 @@
 							</tr>
 							<tr>
 								<th>Publish date</th>
-								<th>Current system time (Updated in office room)</th>
+								<th>Current system date (Updated in office room)</th>
 							</tr>
 						</tbody>
 					</table>
+					<br>
+					When sorting <u>the Mod Selector</u>, if sort the modules based on their IDs if the LED blinking in the top-right corner of the display is red, otherwise use their sort keys!
+					<br><br>
+					<i>Side note:</i> You'll never get a question based on the repo if the LED is red.
+					<br><br>
+					<i>Keep in mind that unpublished (fake) modules act like they are published on the repo with the properties above!</i>
                 </div>
                 <div class="page-footer relative-footer">Page 2 of 2</div>
             </div>
