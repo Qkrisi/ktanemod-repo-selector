@@ -146,7 +146,8 @@ public class qkQuestionerModule : MonoBehaviour
 
     private int index = 0;
 
-    public TextMesh inputText;
+    [HideInInspector]
+    public TextMesh inputText = null;
 
     private Material redMat;
     private GameObject statusC;
@@ -204,7 +205,7 @@ public class qkQuestionerModule : MonoBehaviour
             yield break;
         }
         Logger("Waiting for service to finish...");
-        yield return new WaitUntil(() => Service._done && displayText != null);
+        yield return new WaitUntil(() => Service._done && displayText != null && inputText != null);
         Logger("Service finished, generating question...");
         foreach (string l in Service.toLog) Logger(l);
         redMat = findFromRoot("RedOBJ").GetComponent<Renderer>().material;

@@ -18,4 +18,10 @@
         Add,
         Disable
     }
+
+    public enum DisplayType
+    {
+        Display,
+        Input
+    }
 }
