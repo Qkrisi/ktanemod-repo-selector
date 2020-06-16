@@ -51,8 +51,8 @@ public class qkQuestionerModule : MonoBehaviour
 
     private readonly string[] orderTypes = new[]
     {
-        "A-Z",
-        "Z-A",
+        "Sort keys (A-Z)",
+        "Sort keys (Z-A)",
         "Defuser difficulty (very easy - very hard)",
         "Defuser difficulty (very hard - very easy)",
         "Expert difficulty (very easy - very hard)",
@@ -382,9 +382,9 @@ public class qkQuestionerModule : MonoBehaviour
     {
         sortedModules.Clear();
         List<Module> tempList = fetchedModules.ToList();
-        sortedModules.Add("A-Z", tempList.ToList());
+        sortedModules.Add("Sort keys (A-Z)", tempList.ToList());
         tempList.Reverse();
-        sortedModules.Add("Z-A", tempList.ToList());
+        sortedModules.Add("Sort keys (Z-A)", tempList.ToList());
         tempList.Reverse();
 
         List<Module> veryEasy = new List<Module>();
@@ -658,7 +658,11 @@ public class qkQuestionerModule : MonoBehaviour
             yield return ProcessTwitchCommand("press solve");
             yield break;
         }
-        while (!_solved) yield return ProcessTwitchCommand(String.Format("submit {0}", solvePair.Second));
+        while (!_solved)
+        {
+            yield return ProcessTwitchCommand(String.Format("submit {0}", solvePair.Second));
+            yield return true;
+        }
     }
 
 #pragma warning disable 414
