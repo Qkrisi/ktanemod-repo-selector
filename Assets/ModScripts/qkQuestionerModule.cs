@@ -500,10 +500,13 @@ public class qkQuestionerModule : MonoBehaviour
 
     public void registerAns(string answer)
     {
+        Logger(String.Format("Subbmitted answer: {0}, expected answer: {1}", answer, solvePair.Second));
         if (answer == solvePair.Second)
         {
+            Logger("That's correct!");
             if (stage == 3)
-            { 
+            {
+                Logger("Module solved!");
                 GetComponent<KMBombModule>().HandlePass();
                 _solved = true;
                 index = 0;
@@ -515,6 +518,7 @@ public class qkQuestionerModule : MonoBehaviour
         }
         else
         {
+            Logger("That's incorrect! Strike!");
             GetComponent<KMBombModule>().HandleStrike();
             stage = 0;
             newStage();

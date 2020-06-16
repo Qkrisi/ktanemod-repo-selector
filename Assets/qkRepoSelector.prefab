@@ -81,7 +81,7 @@ GameObject:
   - component: {fileID: 114257710446973446}
   - component: {fileID: 114601129120171678}
   m_Layer: 0
-  m_Name: qkQuestionerModule
+  m_Name: qkRepoSelector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1841,8 +1841,8 @@ TextMesh:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1989134591575662}
   m_Text: "A problem has been detected and Module has been \ndeactivated to prevent
-    damage to your game.\n\nquestionerService_NOT_ENABLED\n\nCheck to make sure if
-    the service is disabled on the\nMod Selector in the setup room.\n\nIf problem
+    damage to your game.\n\nrepoSelectorService_NOT_ENABLED\n\nCheck to make sure
+    if the service is disabled on the\nMod Selector in the setup room.\n\nIf problem
     persists, uninstall and reinstall KTaNE.\nTurn the computer off and on.\n\nTechnical
     information:\n\n*** STOP 0x00000069 (0x00000069, 0x00000420)\n\n"
   m_OffsetZ: 0
@@ -2453,8 +2453,8 @@ MonoBehaviour:
   m_Script: {fileID: -119419473, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ModuleType: qkQuestionerModule
-  ModuleDisplayName: Questioner Module
+  ModuleType: qkRepoSelector
+  ModuleDisplayName: Repo Selector
   RequiresTimerVisibility: 0
 --- !u!114 &114940825202714522
 MonoBehaviour:
