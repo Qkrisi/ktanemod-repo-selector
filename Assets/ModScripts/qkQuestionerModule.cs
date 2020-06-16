@@ -362,7 +362,13 @@ public class qkQuestionerModule : MonoBehaviour
 
     string getStringByNum(int num)
     {
-        return num == 1 ? "1st" : num == 2 ? "2nd" : num==3 ? "3rd" :  num.ToString() + "th";
+        switch(num)
+        {
+            case 11:return "11th";
+            case 12:return "12th";
+            case 13:return "13th";
+            default:return String.Format("{0}{1}", num, num % 10 == 1 ? "st" : num % 10 == 2 ? "nd" : num % 10 == 3 ? "rd" : "th");
+        }
     }
 
     private List<string> getSortageByProperty(string sort, List<string> baseSet)
