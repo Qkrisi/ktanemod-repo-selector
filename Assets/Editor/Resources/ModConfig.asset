@@ -14,7 +14,20 @@ MonoBehaviour:
   id: qkRepoSelector
   title: Repo Selector
   author: Qkrisi, Fang
-  description: .
+  description: 'You can''t hide anything from me
+
+
+    Answer questions based on the Repository of Manual Pages, the Mod Selector or
+    the bomb (or combined :P)
+
+
+    Module by Qkrisi, model by Fang
+
+
+    Tiwtch Plays supported
+
+
+    Module ID: qkRepoSelector'
   version: 0.1
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: 1abb104ec8b5846209cabb0d75d01f44, type: 3}
