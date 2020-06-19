@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657868, g: 0.49641263, b: 0.57481706, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -161,6 +161,10 @@ Prefab:
       propertyPath: m_Name
       value: qkRepoSelector (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
   m_IsPrefabParent: 0
@@ -258,6 +262,10 @@ Prefab:
       propertyPath: m_Name
       value: qkRepoSelector (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
   m_IsPrefabParent: 0
@@ -299,6 +307,10 @@ Prefab:
     - target: {fileID: 4260375470856282, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093891449513500, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
@@ -415,6 +427,10 @@ Prefab:
     - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
       propertyPath: m_Name
       value: qkRepoSelector (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
@@ -589,6 +605,10 @@ Prefab:
     - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
       propertyPath: m_Name
       value: qkRepoSelector (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142216164730768, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3e5bb8a39e8cd4f9c8327e7652feeb99, type: 2}
