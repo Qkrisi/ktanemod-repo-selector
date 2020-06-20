@@ -152,6 +152,8 @@ public class qkQuestionerModule : MonoBehaviour
     private Material redMat;
     private GameObject statusC;
 
+    private float WaitTime = 0.045f;
+
     private LoopingList<string> getBaseList(Func<string> bases)
     {
         return new LoopingList<string>(new List<string>(bases().Select(c => c.ToString())));
@@ -557,7 +559,7 @@ public class qkQuestionerModule : MonoBehaviour
                 LoopingList<string> cList = getBaseList(bases);
                 cList.RemoveAt(cList.Count - 1);
                 modify(String.Join("", cList.ToArray()));
-                yield return new WaitForSeconds(.05f);
+                yield return new WaitForSeconds(WaitTime);
             }
             _input = true;
             yield break;
@@ -569,7 +571,7 @@ public class qkQuestionerModule : MonoBehaviour
             final.Add(chList[0]);
             chList.RemoveAt(0);
             modify(String.Join("", final.ToArray()));
-            yield return new WaitForSeconds(.05f);
+            yield return new WaitForSeconds(WaitTime);
         }
         _input = true;
     }
