@@ -152,7 +152,7 @@ public class qkQuestionerModule : MonoBehaviour
     private Material redMat;
     private GameObject statusC;
 
-    private float WaitTime = 0.045f;
+    private readonly float WaitTime = 0.045f;
 
     private LoopingList<string> getBaseList(Func<string> bases)
     {
