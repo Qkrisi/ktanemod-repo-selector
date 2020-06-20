@@ -152,6 +152,10 @@ public class qkQuestionerModule : MonoBehaviour
     private Material redMat;
     private GameObject statusC;
 
+    private readonly float WaitTime = 0.045f;
+
+    bool TwitchShouldCancelCommand;
+
     private LoopingList<string> getBaseList(Func<string> bases)
     {
         return new LoopingList<string>(new List<string>(bases().Select(c => c.ToString())));
@@ -533,12 +537,37 @@ public class qkQuestionerModule : MonoBehaviour
         return;
     }
 
+    private bool allowWrite = false;
+
     public void StartMove(Move move)
     {
-        index += move == Move.Left ? -1 : 1;
-        if (index == answerSet.Count) index = 0;
-        if (index == -1) index = answerSet.Count - 1;
-        StartCoroutine(writeText(inputText, answerSet[index]));
+        allowWrite = true;
+        StartCoroutine(inputWriter(move));
+    }
+
+    public void StopMove()
+    {
+        allowWrite = false;
+    }
+
+    IEnumerator inputWriter(Move move)
+    {
+        float wTime = 0.35f;
+        while(allowWrite)
+        {
+            if (!_input)
+            {
+                yield return null;
+                continue;
+            }
+            index += move == Move.Left ? -1 : 1;
+            if (index == answerSet.Count) index = 0;
+            if (index == -1) index = answerSet.Count - 1;
+            yield return writeText(inputText, answerSet[index]);
+            yield return new WaitForSeconds(wTime);
+            if (wTime > 0.01f) wTime -= 0.04f;
+        }
+        yield break;
     }
 
     IEnumerator writeText(TextMesh display, string q)
@@ -557,7 +586,7 @@ public class qkQuestionerModule : MonoBehaviour
                 LoopingList<string> cList = getBaseList(bases);
                 cList.RemoveAt(cList.Count - 1);
                 modify(String.Join("", cList.ToArray()));
-                yield return new WaitForSeconds(.05f);
+                yield return new WaitForSeconds(WaitTime);
             }
             _input = true;
             yield break;
@@ -569,7 +598,7 @@ public class qkQuestionerModule : MonoBehaviour
             final.Add(chList[0]);
             chList.RemoveAt(0);
             modify(String.Join("", final.ToArray()));
-            yield return new WaitForSeconds(.05f);
+            yield return new WaitForSeconds(WaitTime);
         }
         _input = true;
     }
@@ -671,6 +700,8 @@ public class qkQuestionerModule : MonoBehaviour
         }
         while (!_solved)
         {
+
+            yield return new WaitUntil(() => _input && !allowWrite);
             yield return ProcessTwitchCommand(String.Format("submit {0}", solvePair.Second));
             yield return true;
         }
@@ -722,12 +753,21 @@ public class qkQuestionerModule : MonoBehaviour
             yield return "sendtochaterror Answer is invalid!";
             yield break;
         }
+        yield return null;
+        tpDisabled["RightButton"].First.OnInteract();
         while (inputText.text != command)
         {
             yield return null;
-            tpDisabled["RightButton"].First.OnInteract();
-            yield return new WaitUntil(() => _input);
+            if(TwitchShouldCancelCommand)
+            {
+                allowWrite = false;
+                yield return "cancelled";
+                yield break;
+            }
         }
+        tpDisabled["RightButton"].First.OnInteractEnded();
+        yield return new WaitUntil(() => _input && !allowWrite);
+        Debug.Log("pressing enter");
         findFromRoot("Display").transform.Find("enter").GetComponent<KMSelectable>().OnInteract();
     }
 }

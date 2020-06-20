@@ -18,4 +18,9 @@ public class MoveButton : ButtonBase
         if (Instance._solved || !Instance._input) return;
         Instance.StartMove(move);
     }
+
+    protected override void OnEnded()
+    {
+        Instance.StopMove();
+    }
 }

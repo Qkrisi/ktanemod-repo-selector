@@ -21,6 +21,7 @@ public abstract class ButtonBase : ObjectBase
                 break;
         }
         GetComponent<KMSelectable>().OnInteract += Click;
+        GetComponent<KMSelectable>().OnInteractEnded += OnEnded;
     }
 
     private string getText()
@@ -40,4 +41,6 @@ public abstract class ButtonBase : ObjectBase
         GetComponent<KMSelectable>().AddInteractionPunch(.5f);
         Instance.GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
     }
+
+    protected virtual void OnEnded() { }
 }
