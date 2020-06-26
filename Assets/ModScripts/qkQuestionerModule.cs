@@ -37,8 +37,8 @@ public class qkQuestionerModule : MonoBehaviour
 
     private readonly string[] bothQuestions = new[]
     {
-        "Is the {0} module on the repo sorted {2} loaded in the game?",
-        "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?",
+        "Is the {0} module on the repo sorted by {2} loaded in the game?",
+        "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?",
         "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?",
         "What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?",
     };
@@ -162,6 +162,13 @@ public class qkQuestionerModule : MonoBehaviour
     [HideInInspector]
     public bool _input = false;
 
+    bool TwitchPlaysActive;
+
+    [HideInInspector]
+    public ModuleState State = ModuleState.Main;
+
+    bool RestrictQuestions = false;
+
     private bool _colorblind
     {
         set
@@ -183,7 +190,12 @@ public class qkQuestionerModule : MonoBehaviour
         return final.Count > 0 ? String.Join("", final.ToArray()) : modifyName(getModuleIDByName(oldModule));
     }
 
-    IEnumerator Start()
+    void Start()
+    {
+        GetComponent<KMBombModule>().OnActivate += () => StartCoroutine(Starter());
+    }
+
+    IEnumerator Starter()
     {
         moduleID = ++moduleIDCounter;
         Service = FindObjectOfType<questionerService>();
@@ -207,12 +219,20 @@ public class qkQuestionerModule : MonoBehaviour
             toggleObject("Error", true);
             yield break;
         }
+        findFromRoot("Error").SetActive(false);
         Logger("Waiting for service to finish...");
         yield return new WaitUntil(() => Service._done && displayText != null && inputText != null);
         Logger("Service finished, generating question...");
         foreach (string l in Service.toLog) Logger(l);
         redMat = findFromRoot("RedOBJ").GetComponent<Renderer>().material;
         statusC = findFromRoot("Display").transform.Find("Sphere").gameObject;
+        if(TwitchPlaysActive)
+        {
+            State = ModuleState.TwitchCheck;
+            answerSet = new LoopingList<string>() { "" };
+            StartCoroutine(newText("Please press enter\non the module!"));
+            yield return new WaitUntil(() => State == ModuleState.Main);
+        }
         if (!Service.webQuestions && API == null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
@@ -233,13 +253,14 @@ public class qkQuestionerModule : MonoBehaviour
         {
             finalQuestions = webQuestions.ToArray().Concat(selectorQuestions).Concat(neitherQuestions).Concat(bothQuestions).ToArray();
         }
-        findFromRoot("Error").SetActive(false);
+        if (RestrictQuestions) finalQuestions = finalQuestions.Where(x => !selectorQuestions.Contains(x) && !bothQuestions.Contains(x)).ToArray();
         sortModules();
         newStage();
         StartCoroutine(Blinker());
         if (API != null) Logger(String.Format("Light is {0}, Selector modules ordered by their {1}s: {2}", Service.webQuestions ? "green" : "red", Service.webQuestions ? "sort key" : "ID", String.Join(", ", getSelectorModules().ToArray())));
         _colorblind = GetComponent<KMColorblindMode>().ColorblindModeActive;
     }
+
 
     private IEnumerator Blinker()
     {
@@ -261,7 +282,7 @@ public class qkQuestionerModule : MonoBehaviour
 
     void Logger(string l)
     {
-        Debug.LogFormat("[Questioner #{0}] {1}", moduleID, l);
+        Debug.LogFormat("[Repo Selector #{0}] {1}", moduleID, l);
     }
 
     private Tuple<string, string> getSolvePair(string[] set) //First: question, Second: answer
@@ -281,10 +302,10 @@ public class qkQuestionerModule : MonoBehaviour
         string activeModule = "";
         switch (set[index])
         {
-            case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?":
+            case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?":
                 activeModule = getModuleNameByID(MSModules[selectorIndex - 1]);
                 break;
-            case "Is the {0} module on the repo sorted {2} loaded in the game?":
+            case "Is the {0} module on the repo sorted by {2} loaded in the game?":
             case "What is the {3} letter/digit of the module that is the {0} on the repo sorted by {2}?":
                 activeModule = sortedModules[sortType][repoIndex - 1].Name;
                 break;
@@ -331,12 +352,12 @@ public class qkQuestionerModule : MonoBehaviour
         string Answer = "";
         switch (set[index])
         {
-            case "Is the {0} module on the repo sorted {2} loaded in the game?":
+            case "Is the {0} module on the repo sorted by {2} loaded in the game?":
                 Answer = MSModules.Contains(getModuleIDByName(activeModule)) ? "YES" : "NO";
                 //toggleObject("BooleanButtons");
                 answerSet = new LoopingList<string>(boolAns);
                 break;
-            case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted {2}?":
+            case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?":
                 Answer = fetchedModules[repoIndex - 1].Name == activeModule ? "YES" : "NO";
                 //toggleObject("BooleanButtons");
                 answerSet = new LoopingList<string>(boolAns);
@@ -671,6 +692,12 @@ public class qkQuestionerModule : MonoBehaviour
             yield return ProcessTwitchCommand("press solve");
             yield break;
         }
+        if(State == ModuleState.TwitchCheck)
+        {
+            yield return ProcessTwitchCommand("go");
+            yield return null;
+            yield return new WaitUntil(() => _input);
+        }
         while (!_solved)
         {
             yield return ProcessTwitchCommand(String.Format("submit {0}", solvePair.Second));
@@ -680,11 +707,24 @@ public class qkQuestionerModule : MonoBehaviour
 
 #pragma warning disable 414
     [HideInInspector]
-    public string TwitchHelpMessage = "Use '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present! Use '!{0} colorblind' to enable colorblind mode!";
+    public string TwitchHelpMessage = "Use '!{0} go' to start the module! '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present! Use '!{0} colorblind' to enable colorblind mode!";
 #pragma warning restore 414
     public IEnumerator ProcessTwitchCommand(string command)
     {
         command = command.ToUpperInvariant();
+        if(State==ModuleState.TwitchCheck)
+        {
+            if(command=="GO")
+            {
+                RestrictQuestions = true;
+                yield return null;
+                findFromRoot("Display").transform.Find("enter").GetComponent<KMSelectable>().OnInteract();
+                yield break;
+            }
+            yield return null;
+            yield return "sendtochaterror While the module is in TwitchCheck mode, the command can only be 'GO'";
+            yield break;
+        }
         if (command == "COLORBLIND")
         {
             yield return null;
@@ -707,7 +747,7 @@ public class qkQuestionerModule : MonoBehaviour
         if (!command.StartsWith("SUBMIT "))
         {
             yield return null;
-            yield return "sendtochaterror Commands must start with 'press', 'submit' or 'colorblind'!";
+            yield return "sendtochaterror Commands must start with 'press', 'submit' or 'colorblind' after the checking state!";
             yield break;
         }
         if (grantSolve)

@@ -24,4 +24,10 @@
         Display,
         Input
     }
+
+    public enum ModuleState
+    {
+        TwitchCheck,
+        Main
+    }
 }

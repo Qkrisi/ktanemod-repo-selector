@@ -28,6 +28,6 @@ MonoBehaviour:
 
 
     Module ID: qkRepoSelector'
-  version: 0.1
+  version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 1abb104ec8b5846209cabb0d75d01f44, type: 3}
