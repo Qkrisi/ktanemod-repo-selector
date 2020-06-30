@@ -296,7 +296,7 @@ public class qkQuestionerModule : MonoBehaviour
         string sortType = orderTypes[RNG.Range(0, orderTypes.Length)];
         //Debug.LogFormat("[Questioner module #{0}] Sort type is {1}.", moduleID, sortType);
         string rndModule = API != null ? getModuleNameByID(MSModules[RNG.Range(0, MSModules.Count)]) : "";
-        var bombSort = GetComponent<KMBombInfo>().GetSolvedModuleNames().Concat(GetComponent<KMBombInfo>().GetSolvableModuleNames()).ToList();
+        var bombSort = GetComponent<KMBombInfo>().GetModuleNames().ToList();
         bombSort.Sort();
         int bombIndex = RNG.Range(1, bombSort.Count + 1);
         string activeModule = "";
