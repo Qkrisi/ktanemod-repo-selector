@@ -29,6 +29,21 @@ public class questionerService : MonoBehaviour
 
     private bool _changed = false;
 
+    private readonly string[] IgnoreType = new string[]
+    {
+        "Widget",
+        "Holdable"
+    };
+
+    private readonly string[] IgnoreModules = new string[]
+    {
+        "BigButtonTranslated",
+        "MorseCodeTranslated",
+        "PasswordsTranslated",
+        "VentGasTranslated",
+        "WhosOnFirstTranslated"
+    };
+
     IEnumerator Start()
     {
         ChangeStateChanger();
@@ -123,7 +138,7 @@ public class questionerService : MonoBehaviour
         List<Module> Modules = new List<Module>();
         foreach(var item in Deserialized.KtaneModules)
         {
-            if ((string)item["Type"] != "Widget" && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
+            if (!IgnoreType.Contains((string)item["Type"]) && !IgnoreModules.Contains((string)item["ModuleID"]) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
         }
         return Modules;
     }
