@@ -150,6 +150,8 @@ public class questionerService : MonoBehaviour
 
     private bool doesExist(string id)
     {
+		if(IgnoreModules.Contains(id))
+			return true;
         foreach(Module module in modulesFromWeb)
         {
             if (module.ID == id) return true;
