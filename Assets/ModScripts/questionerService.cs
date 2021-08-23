@@ -14,18 +14,18 @@ public class questionerService : MonoBehaviour
 
     WWW Fetch = null;
 
-    public List<Module> modulesFromWeb = new List<Module>();
+    internal static List<Module> modulesFromWeb = new List<Module>();
 
     [HideInInspector]
-    public List<string> toLog = new List<string>();
+    internal static List<string> toLog = new List<string>();
 
     [HideInInspector]
-    public bool webQuestions = false;
+    internal static bool webQuestions = false;
 
     [HideInInspector]
-    public bool _done = false;
+    internal static bool _done = false;
 
-    public IDictionary<string, object> modSelectorAPI = null;
+    internal static IDictionary<string, object> modSelectorAPI = null;
 
     private bool _changed = false;
 
@@ -115,6 +115,11 @@ public class questionerService : MonoBehaviour
         ChangeStateChanger();
         StateChange(KMGameInfo.State.Setup);
     }
+    
+    void OnDisable()
+    {
+		_done = true;
+	}
 
     void ChangeStateChanger()
     {

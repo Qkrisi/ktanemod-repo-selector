@@ -116,10 +116,10 @@ public class qkQuestionerModule : MonoBehaviour
     };
 
     private questionerService Service;
-    private IDictionary<string, object> API { get { try { return Service.modSelectorAPI; } catch { toggleObject("Error"); return null; } } }
+    private IDictionary<string, object> API { get { try { return questionerService.modSelectorAPI; } catch { toggleObject("Error"); return null; } } }
     [HideInInspector]
     public bool _solved = false;
-    private List<Module> fetchedModules { get { try { return Service.modulesFromWeb; } catch { toggleObject("Error"); return new List<Module>(); } } }
+    private List<Module> fetchedModules { get { try { return questionerService.modulesFromWeb; } catch { toggleObject("Error"); return new List<Module>(); } } }
     private List<string> MSModules { get { return getSelectorModules(); } }
     private List<string> MSDisabledModules { get { return getDisabledModules(); } }
     private List<string> MSEnabledModules { get { return getEnabledModules(); } }
@@ -212,18 +212,18 @@ public class qkQuestionerModule : MonoBehaviour
         {
             kPair.Value.SetActive(false);
         }
-        if (Service == null)
+        /*if (Service == null)
         {
             Logger("Couldn't find service. Activating error screen...");
             grantSolve = true;
             toggleObject("Error", true);
             yield break;
-        }
+        }*/
         findFromRoot("Error").SetActive(false);
         Logger("Waiting for service to finish...");
-        yield return new WaitUntil(() => Service._done && displayText != null && inputText != null);
+        yield return new WaitUntil(() => questionerService._done && displayText != null && inputText != null);
         Logger("Service finished, generating question...");
-        foreach (string l in Service.toLog) Logger(l);
+        foreach (string l in questionerService.toLog) Logger(l);
         redMat = findFromRoot("RedOBJ").GetComponent<Renderer>().material;
         statusC = findFromRoot("Display").transform.Find("Sphere").gameObject;
         if(TwitchPlaysActive)
@@ -233,19 +233,19 @@ public class qkQuestionerModule : MonoBehaviour
             StartCoroutine(newText("Please press enter\non the module!"));
             yield return new WaitUntil(() => State == ModuleState.Main);
         }
-        if (!Service.webQuestions && API == null)
+        if (!questionerService.webQuestions && API == null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
             findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
             finalQuestions = neitherQuestions.ToArray();
         }
-        else if (!Service.webQuestions && API != null)
+        else if (!questionerService.webQuestions && API != null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
             findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
             finalQuestions = selectorQuestions.ToArray().Concat(neitherQuestions).ToArray();
         }
-        else if (Service.webQuestions && API == null)
+        else if (questionerService.webQuestions && API == null)
         {
             finalQuestions = webQuestions.ToArray().Concat(neitherQuestions).ToArray();
         }
@@ -257,7 +257,7 @@ public class qkQuestionerModule : MonoBehaviour
         sortModules();
         newStage();
         StartCoroutine(Blinker());
-        if (API != null) Logger(String.Format("Light is {0}, Selector modules ordered by their {1}s: {2}", Service.webQuestions ? "green" : "red", Service.webQuestions ? "sort key" : "ID", String.Join(", ", getSelectorModules().ToArray())));
+        if (API != null) Logger(String.Format("Light is {0}, Selector modules ordered by their {1}s: {2}", questionerService.webQuestions ? "green" : "red", questionerService.webQuestions ? "sort key" : "ID", String.Join(", ", getSelectorModules().ToArray())));
         _colorblind = GetComponent<KMColorblindMode>().ColorblindModeActive;
     }
 
@@ -489,7 +489,7 @@ public class qkQuestionerModule : MonoBehaviour
         sortedModules.Add("Publish date (oldest to newest)", tempList.ToList());
         tempList.Reverse();
         sortedModules.Add("Publish date (newest to oldest)", tempList.ToList());
-        if (!Service.webQuestions) return;
+        if (!questionerService.webQuestions) return;
         foreach (KeyValuePair<string, List<Module>> pair in sortedModules)
         {
             Logger(String.Format("Modules sorted by {0}: {1}", pair.Key, String.Join(", ", pair.Value.Select(item => item.ID).ToArray())));
@@ -637,7 +637,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         if (API == null) return new List<string>();
         var got = ((IEnumerable<string>)API["AllSolvableModules"]).Concat((IEnumerable<string>)API["AllNeedyModules"]).ToList();
-        if (!Service.webQuestions)
+        if (!questionerService.webQuestions)
         {
             got.Sort();
             return got;
@@ -648,7 +648,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         if (API == null) return new List<string>();
         var got = ((IEnumerable<string>)API["DisabledSolvableModules"]).Concat((IEnumerable<string>)API["DisabledNeedyModules"]).ToList();
-        if (!Service.webQuestions)
+        if (!questionerService.webQuestions)
         {
             got.Sort();
             return got;
@@ -659,7 +659,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         if (API == null) return new List<string>();
         var got = getSelectorModules().Except(getDisabledModules()).ToList();
-        if (!Service.webQuestions)
+        if (!questionerService.webQuestions)
         {
             got.Sort();
             return got;
