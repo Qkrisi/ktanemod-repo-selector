@@ -530,7 +530,7 @@ public class qkQuestionerModule : MonoBehaviour
 
     public void registerAns(string answer)
     {
-        Logger(String.Format("Subbmitted answer: {0}, expected answer: {1}", answer, solvePair.Second));
+        Logger(String.Format("Submitted answer: {0}, expected answer: {1}", answer, solvePair.Second));
         if (answer == solvePair.Second)
         {
             Logger("That's correct!");
