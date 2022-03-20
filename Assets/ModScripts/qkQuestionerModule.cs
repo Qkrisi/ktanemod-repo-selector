@@ -534,7 +534,7 @@ public class qkQuestionerModule : MonoBehaviour
         if (answer == solvePair.Second)
         {
             Logger("That's correct!");
-            if (stage == 3)
+            if (stage == 1)
             {
                 Logger("Module solved!");
                 GetComponent<KMBombModule>().HandlePass();

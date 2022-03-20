@@ -41,7 +41,13 @@ public class questionerService : MonoBehaviour
         "MorseCodeTranslated",
         "PasswordsTranslated",
         "VentGasTranslated",
-        "WhosOnFirstTranslated"
+        "WhosOnFirstTranslated",
+        "AdjacentLettersModule_Rus",
+        "ColourFlashES",
+        "caesarCyclePL",
+        "ColourFlashPL",
+        "insanetalkPL",
+        "WordSearchModulePL"
     };
 
     IEnumerator Start()
