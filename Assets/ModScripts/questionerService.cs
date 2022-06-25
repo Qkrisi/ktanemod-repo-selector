@@ -37,17 +37,11 @@ public class questionerService : MonoBehaviour
 
     private readonly string[] IgnoreModules = new string[]
     {
-        "BigButtonTranslated",
-        "MorseCodeTranslated",
-        "PasswordsTranslated",
-        "VentGasTranslated",
-        "WhosOnFirstTranslated",
-        "AdjacentLettersModule_Rus",
-        "ColourFlashES",
-        "caesarCyclePL",
-        "ColourFlashPL",
-        "insanetalkPL",
-        "WordSearchModulePL"
+    };
+    
+    private readonly Dictionary<string, string> Swap = new Dictionary<string, string>
+    {
+        {"+", "...?"}
     };
 
     IEnumerator Start()
@@ -112,6 +106,18 @@ public class questionerService : MonoBehaviour
                 ));
         }
         modulesFromWeb = modulesFromWeb.OrderBy(x => x.SortKey).ToList();
+        var SortKeys = modulesFromWeb.Select(x => x.SortKey).ToArray();
+        foreach(var swapPair in Swap)
+        {
+            var item1 = Array.IndexOf(SortKeys, swapPair.Key);
+            var item2 = Array.IndexOf(SortKeys, swapPair.Value);
+            if(item1 != -1 && item2 != -1)
+            {
+                var original = modulesFromWeb[item1];
+                modulesFromWeb[item1] = modulesFromWeb[item2];
+                modulesFromWeb[item2] = original;
+            }
+        }
         //Debug.LogFormat("Name of the last module: {0}", modulesFromWeb[modulesFromWeb.Count-1].Name);
         _done = true;
     }
@@ -149,7 +155,7 @@ public class questionerService : MonoBehaviour
         List<Module> Modules = new List<Module>();
         foreach(var item in Deserialized.KtaneModules)
         {
-            if (!IgnoreType.Contains((string)item["Type"]) && !IgnoreModules.Contains((string)item["ModuleID"]) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
+            if (!IgnoreType.Contains((string)item["Type"]) && (!item.ContainsKey("TranslationOf") || string.IsNullOrEmpty((string)item["TranslationOf"])) && !IgnoreModules.Contains((string)item["ModuleID"]) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
         }
         return Modules;
     }
