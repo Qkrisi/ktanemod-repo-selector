@@ -35,7 +35,7 @@ public class questionerService : MonoBehaviour
         "Holdable"
     };
 
-    private readonly string[] IgnoreModules = new string[]
+    private readonly List<string> IgnoreModules = new List<string>
     {
     };
     
@@ -155,7 +155,10 @@ public class questionerService : MonoBehaviour
         List<Module> Modules = new List<Module>();
         foreach(var item in Deserialized.KtaneModules)
         {
-            if (!IgnoreType.Contains((string)item["Type"]) && (!item.ContainsKey("TranslationOf") || string.IsNullOrEmpty((string)item["TranslationOf"])) && !IgnoreModules.Contains((string)item["ModuleID"]) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
+            var id = (string)item["ModuleID"];
+            var ignore = IgnoreModules.Contains(id);
+            if (!ignore && !IgnoreType.Contains((string)item["Type"]) && (!item.ContainsKey("TranslationOf") || string.IsNullOrEmpty((string)item["TranslationOf"])) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
+            else if(!ignore) IgnoreModules.Add(id);
         }
         return Modules;
     }
@@ -167,13 +170,7 @@ public class questionerService : MonoBehaviour
 
     private bool doesExist(string id)
     {
-		if(IgnoreModules.Contains(id))
-			return true;
-        foreach(Module module in modulesFromWeb)
-        {
-            if (module.ID == id) return true;
-        }
-        return false;
+        return IgnoreModules.Contains(id) || modulesFromWeb.Any(m => m.ID == id);
     }
 }
 
