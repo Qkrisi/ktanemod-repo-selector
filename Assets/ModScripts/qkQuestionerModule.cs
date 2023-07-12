@@ -18,38 +18,48 @@ public class qkQuestionerModule : MonoBehaviour
         {4} Random module from mod selector
         {5} Disabled num
         {6} Enabled num
-        {7} Order num (1st, 2nd, 3rd, etc.) from bomb       
+        {7} Order num (1st, 2nd, 3rd, etc.) from bomb    
+        {8} Random module from the repo
+        {9} Module type
+        {10} Release date
     */
     private string[] finalQuestions = new string[] { };
 
-    private readonly string[] webQuestions = new[]
+    private readonly string[] webQuestions = new string[]
     {
         "What is the {3} letter/digit of the module that is the {0} on the repo sorted by {2}?",
+        "Is {8} a {9} module?",
+        "How many tutorial videos does {8} have assigned to it?",
+        "How many people have worked on {8}?",
+        "What is the last digit of the {10} {8} was released on?",
+        "What is the {3} digit of the Steam ID of {8}?",
+        "Does {8} have its source code available?",
+        "What is the Souvenir status of {8}?"
     };
 
-    private readonly string[] selectorQuestions = new[]
+    private readonly string[] selectorQuestions = new string[]
     {
-        "What is the {3} letter/digit of the module that is loaded {1} in game?",
+        //"What is the {3} letter/digit of the module that is loaded {1} in game?",
         "Is {4} disabled by an enabled profile?",
-        "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
-        "What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules? (A-Z)"
+        //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
+        //"What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules? (A-Z)"
     };
 
-    private readonly string[] bothQuestions = new[]
+    private readonly string[] bothQuestions = new string[]
     {
-        "Is the {0} module on the repo sorted by {2} loaded in the game?",
-        "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?",
-        "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?",
-        "What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?",
+        //"Is the {0} module on the repo sorted by {2} loaded in the game?",
+        //"Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?",
+        //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?",
+        //"What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules sorted by {2} on the repo?",
     };
 
-    private readonly string[] neitherQuestions = new[]
+    private readonly string[] neitherQuestions = new string[]
     {
         "What is the {3} letter/digit of the module that is {7} on the bomb sorted A-Z?",
         "What is the {3} letter/digit of the module that is {7} on the bomb sorted Z-A?"
     };
 
-    private readonly string[] orderTypes = new[]
+    private readonly string[] orderTypes = new string[]
     {
         "Sort keys (A-Z)",
         "Sort keys (Z-A)",
@@ -61,10 +71,23 @@ public class qkQuestionerModule : MonoBehaviour
         "Publish date (oldest to newest)"
     };
 
+    private readonly string[] ModuleTypes = new string[]
+    {
+        "regular",
+        "needy"
+    };
+
+    private readonly string[] ReleaseDateTypes = new string[]
+    {
+        "year",
+        "month",
+        "day"
+    };
+
     private readonly string[] dependsOnDisableds = new string[]
     {
-        "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
-        "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?"
+        //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
+        //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?"
     };
 
     private LoopingList<string> answerSet = new LoopingList<string>();
@@ -113,6 +136,28 @@ public class qkQuestionerModule : MonoBehaviour
         "7",
         "8",
         "9"
+    };
+
+    private readonly List<string> digitAns = new List<string>()
+    {
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+    };
+
+    private readonly List<string> souvenirAns = new List<string>()
+    {
+        "Unexamined",
+        "Not a candidate",
+        "Considered",
+        "Supported"
     };
 
     private questionerService Service;
@@ -294,12 +339,15 @@ public class qkQuestionerModule : MonoBehaviour
         int disabledIndex = RNG.Range(1, MSDisabledModules.Count + 1);
         int enabledIndex = RNG.Range(1, MSEnabledModules.Count + 1);
         string sortType = orderTypes[RNG.Range(0, orderTypes.Length)];
+        string moduleType = ModuleTypes[RNG.Range(0, ModuleTypes.Length)];
+        string releaseDateType = ReleaseDateTypes[RNG.Range(0, ReleaseDateTypes.Length)];
         //Debug.LogFormat("[Questioner module #{0}] Sort type is {1}.", moduleID, sortType);
         string rndModule = API != null ? getModuleNameByID(MSModules[RNG.Range(0, MSModules.Count)]) : "";
         var bombSort = GetComponent<KMBombInfo>().GetModuleNames().ToList();
         bombSort.Sort();
         int bombIndex = RNG.Range(1, bombSort.Count + 1);
         string activeModule = "";
+        var useSteamID = false;
         switch (set[index])
         {
             case "Is the {1} module loaded in game (A-Z) the same module as the {1} module on the repo sorted by {2}?":
@@ -336,8 +384,23 @@ public class qkQuestionerModule : MonoBehaviour
                 bombSort.Reverse();
                 activeModule = bombSort[bombIndex - 1];
                 break;
+            case "Is {8} a {9} module?":
+            case "How many tutorial videos does {8} have assigned to it?":
+            case "How many people have worked on {8}?":
+            case "What is the last digit of the {10} {8} was released on?":
+            case "Does {8} have its source code available?":
+            case "What is the Souvenir status of {8}?":
+                activeModule = fetchedModules[repoIndex - 1].Name;
+                break;
+            case "What is the {3} digit of the Steam ID of {8}?":
+                while(string.IsNullOrEmpty(fetchedModules[repoIndex - 1].SteamID))
+                    repoIndex = RNG.Range(1, fetchedModules.Count + 1);
+                activeModule = fetchedModules[repoIndex - 1].Name;
+                useSteamID = true;
+                break;
         }
-        var newActive = modifyName(activeModule);
+
+        var newActive = useSteamID ? fetchedModules[repoIndex - 1].SteamID : modifyName(activeModule);
 
         int letterIndex = RNG.Range(1, newActive.Length + 1);
 
@@ -379,9 +442,54 @@ public class qkQuestionerModule : MonoBehaviour
                 //toggleObject("BooleanButtons");
                 answerSet = new LoopingList<string>(boolAns);
                 break;
+            case "Is {8} a {9} module?":
+                Answer = fetchedModules[repoIndex - 1].Type == moduleType ? "YES" : "NO";
+                answerSet = new LoopingList<string>(boolAns);
+                break;
+            case "How many tutorial videos does {8} have assigned to it?":
+                var tutorialCount = fetchedModules[repoIndex - 1].TutorialVideos.Length;
+                Answer = tutorialCount.ToString();
+                var fillerList = new List<int>();
+                if (tutorialCount > 9)
+                    fillerList = Enumerable.Range(10, tutorialCount - 9 + RNG.Range(5, 30)).ToList();
+                answerSet = new LoopingList<string>(digitAns.Concat(fillerList.Select(n => n.ToString())).ToList());
+                break;
+            case "How many people have worked on {8}?":
+                var authorCount = fetchedModules[repoIndex - 1].Contributors.Count == 0
+                    ? fetchedModules[repoIndex - 1].Authors.Length
+                    : fetchedModules[repoIndex - 1]
+                        .Contributors
+                        .Values.SelectMany(c => c).Distinct().Count();
+                Answer = authorCount.ToString();
+                var completeList = new List<int>();
+                if (authorCount > 9)
+                    completeList = Enumerable.Range(10, authorCount - 9 + RNG.Range(5, 30)).ToList();
+                answerSet = new LoopingList<string>(digitAns.Concat(completeList.Select(n => n.ToString())).ToList());
+                break;
+            case "What is the last digit of the {10} {8} was released on?":
+                Answer = (releaseDateType == "year" ? fetchedModules[repoIndex - 1].DeserializedPublishDate.Year % 10 :
+                    releaseDateType == "month" ? fetchedModules[repoIndex - 1].DeserializedPublishDate.Month % 10 :
+                    fetchedModules[repoIndex - 1].DeserializedPublishDate.Day % 10).ToString();
+                answerSet = new LoopingList<string>(digitAns);
+                break;
+            case "What is the {3} digit of the Steam ID of {8}?":
+                Answer = Letter;
+                answerSet = new LoopingList<string>(digitAns);
+                break;
+            case "Does {8} have its source code available?":
+                Answer = string.IsNullOrEmpty(fetchedModules[repoIndex - 1].SourceURL) ? "NO" : "YES";
+                answerSet = new LoopingList<string>(boolAns);
+                break;
+            case "What is the Souvenir status of {8}?":
+                Answer = fetchedModules[repoIndex - 1].Souvenir["Status"];
+                answerSet = new LoopingList<string>(souvenirAns);
+                break;
         }
         Logger(String.Format("Active module: {0}", activeModule));
-        return new Tuple<string, string>(String.Format(set[index], finalRepoIndex, finalSelectorIndex, sortType, finalLetterIndex, getModuleNameByID(rndModule), finalDisabledIndex, finalEnabledIndex, getStringByNum(bombIndex)), Answer);
+        return new Tuple<string, string>(
+            String.Format(set[index], finalRepoIndex, finalSelectorIndex, sortType, finalLetterIndex,
+                getModuleNameByID(rndModule), finalDisabledIndex, finalEnabledIndex, getStringByNum(bombIndex),
+                activeModule, moduleType, releaseDateType), Answer);
     }
 
     string getStringByNum(int num)
@@ -402,7 +510,7 @@ public class qkQuestionerModule : MonoBehaviour
         foreach (Module module in sortedList)
         {
             //Debug.LogFormat("Checking module {0}", module.ID);
-            if (baseSet.Contains(module.ID)) { ModuleIDs.Add(module.ID); /*Debug.Log("Correct!");*/ }
+            if (baseSet.Contains(module.ModuleID)) { ModuleIDs.Add(module.ModuleID); /*Debug.Log("Correct!");*/ }
         }
         //Debug.LogFormat("Got number of sorted modules: {0} from: {1} with sorted being {2} and sortage being {3}", ModuleIDs.Count, baseSet.Count, sortedList.Count, sort);
         return ModuleIDs;
@@ -412,6 +520,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         sortedModules.Clear();
         List<Module> tempList = fetchedModules.ToList();
+        Debug.LogFormat("First sort key: {0} ({1})", tempList[0].SortKey, tempList[0].Name);
         sortedModules.Add("Sort keys (A-Z)", tempList.ToList());
         tempList.Reverse();
         sortedModules.Add("Sort keys (Z-A)", tempList.ToList());
@@ -424,7 +533,7 @@ public class qkQuestionerModule : MonoBehaviour
         List<Module> veryHard = new List<Module>();
         foreach (Module module in tempList)
         {
-            switch (module.DefuserDiff)
+            switch (module.DefuserDifficulty)
             {
                 case "VeryEasy":
                     veryEasy.Add(module);
@@ -458,7 +567,7 @@ public class qkQuestionerModule : MonoBehaviour
         veryHard = new List<Module>();
         foreach (Module module in tempList)
         {
-            switch (module.ExpertDiff)
+            switch (module.ExpertDifficulty)
             {
                 case "VeryEasy":
                     veryEasy.Add(module);
@@ -485,14 +594,14 @@ public class qkQuestionerModule : MonoBehaviour
         veryHard.Reverse();
         sortedModules.Add("Expert difficulty (very hard - very easy)", veryHard.Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).ToList());
 
-        tempList = tempList.OrderBy(x => x.PublishDate).ThenByDescending(x => x.SortKey).ToList();
+        tempList = tempList.OrderBy(x => x.DeserializedPublishDate).ThenByDescending(x => x.SortKey).ToList();
         sortedModules.Add("Publish date (oldest to newest)", tempList.ToList());
         tempList.Reverse();
         sortedModules.Add("Publish date (newest to oldest)", tempList.ToList());
         if (!questionerService.webQuestions) return;
         foreach (KeyValuePair<string, List<Module>> pair in sortedModules)
         {
-            Logger(String.Format("Modules sorted by {0}: {1}", pair.Key, String.Join(", ", pair.Value.Select(item => item.ID).ToArray())));
+            Logger(String.Format("Modules sorted by {0}: {1}", pair.Key, String.Join(", ", pair.Value.Select(item => item.ModuleID).ToArray())));
         }
     }
 
@@ -503,22 +612,23 @@ public class qkQuestionerModule : MonoBehaviour
         Logger(String.Format("Question is: '{0}', answer is: '{1}'", solvePair.First, solvePair.Second));
         stage++;
         List<string> question = solvePair.First.Split(new char[] { ' ' }).ToList();
-        string modified = "";
+        var lines = new List<string>() { "" };
         int Counter = 0;
         while (question.Count > 0)
         {
             bool _break = false;
-            modified = Counter == 0 ? modified + question[0] : modified + " " + question[0];
-            if (question[0].Length > 12) _break = true;
-            question.RemoveAt(0);
-            Counter++;
-            if (_break || Counter == 4)
+            var lastLine = lines[lines.Count - 1];
+            var lastLine2 = Counter == 0 ? lastLine + question[0] : lastLine + " " + question[0];
+            if (lastLine2.Length > 30)
             {
-                modified = modified + "\n";
+                lines.Add(question[0]);
                 Counter = 0;
             }
+            else lines[lines.Count - 1] = lastLine2;
+            question.RemoveAt(0);
+            Counter++;
         }
-        StartCoroutine(newText(modified));
+        StartCoroutine(newText(string.Join("\n", lines.ToArray())));
         return;
     }
 
@@ -534,7 +644,7 @@ public class qkQuestionerModule : MonoBehaviour
         if (answer == solvePair.Second)
         {
             Logger("That's correct!");
-            if (stage == 1)
+            if (stage == 2)
             {
                 Logger("Module solved!");
                 GetComponent<KMBombModule>().HandlePass();
@@ -610,7 +720,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         foreach (var Module in fetchedModules)
         {
-            if (Module.ID == ID) return Module.Name;
+            if (Module.ModuleID == ID) return Module.Name;
         }
         return ID;
     }
@@ -619,7 +729,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         foreach (var Module in fetchedModules)
         {
-            if (Module.Name == Name) return Module.ID;
+            if (Module.Name == Name) return Module.ModuleID;
         }
         return Name;
     }
@@ -628,7 +738,7 @@ public class qkQuestionerModule : MonoBehaviour
     {
         foreach (var Module in fetchedModules)
         {
-            if (Module.ID == ID) return Module.SortKey;
+            if (Module.ModuleID == ID) return Module.SortKey;
         }
         return ID;
     }

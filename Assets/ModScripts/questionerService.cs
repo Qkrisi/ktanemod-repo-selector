@@ -9,7 +9,7 @@ public class questionerService : MonoBehaviour
 {
     class ktaneData
     {
-        public List<Dictionary<string, object>> KtaneModules { get; set; }
+        public List<Module> KtaneModules { get; set; }
     }
 
     WWW Fetch = null;
@@ -31,8 +31,8 @@ public class questionerService : MonoBehaviour
 
     private readonly string[] IgnoreType = new string[]
     {
-        "Widget",
-        "Holdable"
+        "widget",
+        "holdable"
     };
 
     private readonly List<string> IgnoreModules = new List<string>
@@ -67,7 +67,7 @@ public class questionerService : MonoBehaviour
         if (Fetch.error == null)
         {
             modulesFromWeb = Processjson(Fetch.text);
-            webQuestions = true;
+            webQuestions = modulesFromWeb.Count > 0;
             toLog.Add("Modules successfully fetched!");
         }
         else
@@ -82,7 +82,7 @@ public class questionerService : MonoBehaviour
             do { allMods = getSelectorModules(); yield return null; } while (allMods.Count == 0);
         }
         //Debug.LogFormat("allMods length: {0}", allMods.Count);
-        List<string> toAdd = new List<string>();
+       /* List<string> toAdd = new List<string>();
         foreach(string mID in allMods)
         {
             //Debug.LogFormat("Checking module by id: {0}", mID);
@@ -93,18 +93,16 @@ public class questionerService : MonoBehaviour
         {
             string sKey = !ID.ToLowerInvariant().StartsWith("the") ? ID.ToUpperInvariant() : ID.ToUpperInvariant().Substring(3);
             toLog.Add(String.Format("Found unuploaded module: {0}", ID));
-            modulesFromWeb.Add(new Module(
-                new Dictionary<string, object>()
-                {
-                    {"Name", ID},
-                    {"ModuleID", ID},
-                    {"SortKey", sKey.Replace(" ","")},
-                    {"DefuserDifficulty", "Easy"},
-                    {"ExpertDifficulty", "Medium"},
-                    {"Published", dateTime.ToString("yyyy-MM-dd")}
-                }
-                ));
-        }
+            modulesFromWeb.Add(new Module
+            {
+                Name = ID,
+                ID = ID,
+                SortKey = sKey.Replace(" ", ""),
+                DefuserDiff = "Easy",
+                ExpertDiff = "Medium",
+                PublishDate = dateTime.ToString("yyyy-MM-dd")
+            });
+        }*/
         modulesFromWeb = modulesFromWeb.OrderBy(x => x.SortKey).ToList();
         var SortKeys = modulesFromWeb.Select(x => x.SortKey).ToArray();
         foreach(var swapPair in Swap)
@@ -153,13 +151,15 @@ public class questionerService : MonoBehaviour
     {
         ktaneData Deserialized = JsonConvert.DeserializeObject<ktaneData>(fetched);
         List<Module> Modules = new List<Module>();
+        Debug.LogFormat("Fetched module count #1: {0}", Deserialized.KtaneModules.Count);
         foreach(var item in Deserialized.KtaneModules)
         {
-            var id = (string)item["ModuleID"];
+            var id = item.ModuleID;
             var ignore = IgnoreModules.Contains(id);
-            if (!ignore && !IgnoreType.Contains((string)item["Type"]) && (!item.ContainsKey("TranslationOf") || string.IsNullOrEmpty((string)item["TranslationOf"])) && (string)item["Origin"]!="Vanilla") Modules.Add(new Module(item));
+            if (!ignore && !IgnoreType.Contains(item.Type) && string.IsNullOrEmpty(item.TranslationOf) && item.Origin!="Vanilla") Modules.Add(item);
             else if(!ignore) IgnoreModules.Add(id);
         }
+        Debug.LogFormat("Fetched module count #2: {0}", Modules.Count);
         return Modules;
     }
 
@@ -170,7 +170,7 @@ public class questionerService : MonoBehaviour
 
     private bool doesExist(string id)
     {
-        return IgnoreModules.Contains(id) || modulesFromWeb.Any(m => m.ID == id);
+        return IgnoreModules.Contains(id) || modulesFromWeb.Any(m => m.ModuleID == id);
     }
 }
 
