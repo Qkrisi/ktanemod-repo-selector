@@ -40,7 +40,7 @@ public class qkQuestionerModule : MonoBehaviour
     private readonly string[] selectorQuestions = new string[]
     {
         //"What is the {3} letter/digit of the module that is loaded {1} in game?",
-        "Is {4} disabled by an enabled profile?",
+        "Is {4} ultimately disabled by profiles?",
         //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
         //"What is the {3} letter/digit of the module that is the {6} one on a list of all enabled modules? (A-Z)"
     };
@@ -368,7 +368,7 @@ public class qkQuestionerModule : MonoBehaviour
             case "What is the {3} letter/digit of the module that is loaded {1} in game?":
                 activeModule = getModuleNameByID(MSModules[selectorIndex - 1]);
                 break;
-            case "Is {4} disabled by an enabled profile?":
+            case "Is {4} ultimately disabled by profiles?":
                 activeModule = getModuleNameByID(rndModule);
                 break;
             case "What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)":
@@ -437,7 +437,7 @@ public class qkQuestionerModule : MonoBehaviour
                 //toggleObject("LetteredButtons");
                 answerSet = new LoopingList<string>(letterAns);
                 break;
-            case "Is {4} disabled by an enabled profile?":
+            case "Is {4} ultimately disabled by profiles?":
                 Answer = MSDisabledModules.Contains(getModuleIDByName(activeModule)) ? "YES" : "NO";
                 //toggleObject("BooleanButtons");
                 answerSet = new LoopingList<string>(boolAns);
