@@ -89,8 +89,22 @@ public class qkQuestionerModule : MonoBehaviour
         //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules? (A-Z)",
         //"What is the {3} letter/digit of the module that is the {5} one on a list of all disabled modules sorted by {2} on the repo?"
     };
+    
+    private LoopingList<string> _answerSet = new LoopingList<string>();
+    private LoopingList<string> tpAnswerSet = new LoopingList<string>();
 
-    private LoopingList<string> answerSet = new LoopingList<string>();
+    private LoopingList<string> answerSet
+    {
+        get
+        {
+            return _answerSet;
+        }
+        set
+        {
+            _answerSet = value;
+            tpAnswerSet = new LoopingList<string>(_answerSet.Select(ans => ans.ToUpperInvariant()).ToList());
+        }
+    }
 
     private readonly List<string> boolAns = new List<string>()
     {
@@ -277,8 +291,16 @@ public class qkQuestionerModule : MonoBehaviour
             answerSet = new LoopingList<string>() { "" };
             StartCoroutine(newText("Please press enter\non the module!"));
             yield return new WaitUntil(() => State == ModuleState.Main);
+            if(questionerService.webQuestions)
+                finalQuestions = webQuestions.ToArray().Concat(neitherQuestions).ToArray();
+            else
+            {
+                statusC.GetComponent<Renderer>().material = redMat;
+                findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
+                finalQuestions = neitherQuestions.ToArray();
+            }
         }
-        if (!questionerService.webQuestions && API == null)
+        else if (!questionerService.webQuestions && API == null)
         {
             statusC.GetComponent<Renderer>().material = redMat;
             findFromRoot("colorblindText").GetComponent<TextMesh>().text = "R";
@@ -817,7 +839,7 @@ public class qkQuestionerModule : MonoBehaviour
 
 #pragma warning disable 414
     [HideInInspector]
-    public string TwitchHelpMessage = "Use '!{0} go' to start the module! '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present! Use '!{0} colorblind' to enable colorblind mode!";
+    public readonly string TwitchHelpMessage = "Use '!{0} go' to start the module! '!{0} submit <answer>' to submit an answer! Use '!{0} press solve' to solve the module if the error screen is present! Use '!{0} colorblind' to enable colorblind mode!";
 #pragma warning restore 414
     public IEnumerator ProcessTwitchCommand(string command)
     {
@@ -868,13 +890,13 @@ public class qkQuestionerModule : MonoBehaviour
         }
         command = command.Replace("SUBMIT ", "");
         yield return new WaitUntil(() => _input);
-        if (!answerSet.Contains(command))
+        if (!tpAnswerSet.Contains(command))
         {
             yield return null;
             yield return "sendtochaterror Answer is invalid!";
             yield break;
         }
-        while (inputText.text != command)
+        while (inputText.text.ToUpperInvariant() != command)
         {
             yield return null;
             tpDisabled["RightButton"].First.OnInteract();
