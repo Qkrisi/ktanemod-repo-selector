@@ -47,6 +47,8 @@ public class Module
             : new string[0];
         if (Contributors == null)
             Contributors = new Dictionary<string, string[]>();
+        if(TutorialVideos == null)
+            TutorialVideos = new Dictionary<string, string>[0];
         Type = Type.ToLowerInvariant();
         if(Souvenir == null)
             Souvenir = new Dictionary<string, string>()
