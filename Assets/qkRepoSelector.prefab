@@ -1264,7 +1264,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 2bfbe6881fe729c4fbbf96441bb9129c, type: 2}
+  - {fileID: 2100000, guid: 87f281fe736088c4fae2bf1109f7beea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1681,7 +1681,7 @@ TextMesh:
   m_FontSize: 120
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 7de502a5b3949b34a85ec00a8c0a5b53, type: 3}
+  m_Font: {fileID: 12800000, guid: efbf24ad75f501e4db5af1141c150dfd, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4294967295
@@ -1692,7 +1692,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1087913094869048}
-  m_Text: "\u25B6"
+  m_Text: "\u25BA"
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -1734,7 +1734,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1195314268646736}
-  m_Text: "\u25C0"
+  m_Text: "\u25C4"
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -2217,8 +2217,6 @@ MonoBehaviour:
   inputText: {fileID: 102880556156277416}
   _input: 0
   State: 1
-  TwitchHelpMessage: Use '!{0} submit <answer>' to submit an answer! Use '!{0} press
-    solve' to solve the module if the error screen is present!
 --- !u!114 &114558948914587674
 MonoBehaviour:
   m_ObjectHideFlags: 1

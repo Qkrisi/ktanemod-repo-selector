@@ -13,7 +13,7 @@ public class qkQuestionerModule : MonoBehaviour
         Formatters:
         {0} Order num (1st, 2nd, 3rd, etc.) from repo
         {1} Order num (1st, 2nd, 3rd, etc.) from mod selector       
-        {2} Sort type (A-Z, Z-A, defuser difficulty (very easy-very hard), defuser diffivulty (vers hard-very easy), expert difficulty (very easy-very hard), expert diffivulty (vers hard-very easy), publish date (newest to oldest), publish date (oldest to newest))
+        {2} Sort type (A-Z, Z-A, defuser difficulty (trivial-extreme), defuser diffivulty (vers hard-very easy), expert difficulty (trivial-extreme), expert difficulty (trivial-extreme), publish date (newest to oldest), publish date (oldest to newest))
         {3} letter/digit num (1st, 2nd, 3rd, etc.)
         {4} Random module from mod selector
         {5} Disabled num
@@ -63,10 +63,10 @@ public class qkQuestionerModule : MonoBehaviour
     {
         "Sort keys (A-Z)",
         "Sort keys (Z-A)",
-        "Defuser difficulty (very easy - very hard)",
-        "Defuser difficulty (very hard - very easy)",
-        "Expert difficulty (very easy - very hard)",
-        "Expert difficulty (very hard - very easy)",
+        "Defuser difficulty (trivial - extreme)",
+        "Defuser difficulty (extreme - trivial)",
+        "Expert difficulty (trivial - extreme)",
+        "Expert difficulty (extreme - trivial)",
         "Publish date (newest to oldest)",
         "Publish date (oldest to newest)"
     };
@@ -411,7 +411,11 @@ public class qkQuestionerModule : MonoBehaviour
             case "How many people have worked on {8}?":
             case "What is the last digit of the {10} {8} was released on?":
             case "Does {8} have its source code available?":
+                activeModule = fetchedModules[repoIndex - 1].Name;
+                break;
             case "What is the Souvenir status of {8}?":
+                while(fetchedModules[repoIndex-1].Type != "regular")
+                    repoIndex = RNG.Range(1, fetchedModules.Count + 1);
                 activeModule = fetchedModules[repoIndex - 1].Name;
                 break;
             case "What is the {3} digit of the Steam ID of {8}?":
@@ -548,15 +552,20 @@ public class qkQuestionerModule : MonoBehaviour
         sortedModules.Add("Sort keys (Z-A)", tempList.ToList());
         tempList.Reverse();
 
+        List<Module> trivial = new List<Module>();
         List<Module> veryEasy = new List<Module>();
         List<Module> Easy = new List<Module>();
         List<Module> Medium = new List<Module>();
         List<Module> Hard = new List<Module>();
         List<Module> veryHard = new List<Module>();
+        List<Module> extreme = new List<Module>();
         foreach (Module module in tempList)
         {
             switch (module.DefuserDifficulty)
             {
+                case "Trivial":
+                    trivial.Add(module);
+                    break;
                 case "VeryEasy":
                     veryEasy.Add(module);
                     break;
@@ -572,25 +581,35 @@ public class qkQuestionerModule : MonoBehaviour
                 case "VeryHard":
                     veryHard.Add(module);
                     break;
+                case "Extreme":
+                    extreme.Add(module);
+                    break;
             }
         }
-        sortedModules.Add("Defuser difficulty (very easy - very hard)", veryEasy.Concat(Easy).Concat(Medium).Concat(Hard).Concat(veryHard).ToList());
+        sortedModules.Add("Defuser difficulty (trivial - extreme)", trivial.Concat(veryEasy).Concat(Easy).Concat(Medium).Concat(Hard).Concat(veryHard).Concat(extreme).ToList());
+        trivial.Reverse();
         veryEasy.Reverse();
         Easy.Reverse();
         Medium.Reverse();
         Hard.Reverse();
         veryHard.Reverse();
-        sortedModules.Add("Defuser difficulty (very hard - very easy)", veryHard.Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).ToList());
+        extreme.Reverse();
+        sortedModules.Add("Defuser difficulty (extreme - trivial)", extreme.Concat(veryHard).Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).Concat(trivial).ToList());
 
+        trivial = new List<Module>();
         veryEasy = new List<Module>();
         Easy = new List<Module>();
         Medium = new List<Module>();
         Hard = new List<Module>();
         veryHard = new List<Module>();
+        extreme = new List<Module>();
         foreach (Module module in tempList)
         {
             switch (module.ExpertDifficulty)
             {
+                case "Trivial":
+                    trivial.Add(module);
+                    break;
                 case "VeryEasy":
                     veryEasy.Add(module);
                     break;
@@ -606,15 +625,18 @@ public class qkQuestionerModule : MonoBehaviour
                 case "VeryHard":
                     veryHard.Add(module);
                     break;
+                case "Extreme":
+                    extreme.Add(module);
+                    break;
             }
         }
-        sortedModules.Add("Expert difficulty (very easy - very hard)", veryEasy.Concat(Easy).Concat(Medium).Concat(Hard).Concat(veryHard).ToList());
+        sortedModules.Add("Expert difficulty (trivial - extreme)", trivial.Concat(veryEasy).Concat(Easy).Concat(Medium).Concat(Hard).Concat(veryHard).Concat(extreme).ToList());
         veryEasy.Reverse();
         Easy.Reverse();
         Medium.Reverse();
         Hard.Reverse();
         veryHard.Reverse();
-        sortedModules.Add("Expert difficulty (very hard - very easy)", veryHard.Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).ToList());
+        sortedModules.Add("Expert difficulty (extreme - trivial)", extreme.Concat(veryHard).Concat(Hard).Concat(Medium).Concat(Easy).Concat(veryEasy).Concat(trivial).ToList());
 
         tempList = tempList.OrderBy(x => x.DeserializedPublishDate).ThenByDescending(x => x.SortKey).ToList();
         sortedModules.Add("Publish date (oldest to newest)", tempList.ToList());
